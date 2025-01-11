@@ -1,0 +1,30 @@
+wcd() {
+	DIR=$1
+		if [ -n "$1" ]; then
+			DIR="$(echo $1 | sed 's/://g'|sed 's/\\/\//g' | sed 's/(/\\(/g; s/)/\\)/g')"
+				DIR=$HOME/$DIR
+				echo $DIR | xclip -selection clipboard
+				cd $DIR
+				fi
+} 
+
+
+fd() {
+	if [ -n "$1" ]; then
+		cd $(find -L ${1} -type d | fzf)
+	else
+		cd $(find -L -type d | fzf)
+			fi 
+}
+fv() {
+	if [ -n "$1" ]; then
+		cd $(find -L ${1} -type d | fzf) && vim
+	else
+		cd $(find -L -type d | fzf) && vim
+			fi
+}
+z() {
+	job=$(jobs | fzf | awk '{print $1}' | grep -o '[0-9]*')
+		fg %$job
+}
+bind '"\C-b": "ls \n"'

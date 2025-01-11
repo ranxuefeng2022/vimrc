@@ -1,0 +1,52 @@
+vmware安装事项：
+1：apt install open-vm-tools-desktop sudo mkdir -p /mnt/shared_folder sudo mount -t fuse.vmhgfs-fuse .host:/ /mnt/shared_folder
+
+2：apt install git
+3：apt install cscope
+4：apt install ctags
+6：apt install tilix
+7：apt install ranger
+8：apt install fzf
+9：ssh-keygen
+
+tmux设置：
+set-option -g mouse on
+set-option -g status on
+set-option -g history-limit 10000
+bind-key -n M-x resize-pane -Z
+bind-key -n M-a run-shell "tmux select-pane -t :.+ && tmux resize-pane -Z"
+bind-key -n M-w select-window -t :-
+bind-key -n M-s switch-client -n
+unbind C-a
+set -g prefix C-a
+bind C-a send-prefix
+
+neovim
+pip3 install --upgrade pynvim
+sudo apt-add-repository ppa:neovim-ppa/stable
+sudo apt-get update
+sudo apt-get install neovim
+
+vim编译配置：
+./configure --with-features=huge \
+--enable-gui=gtk3 \
+--enable-multibyte \
+--enable-rubyinterp=yes \
+--enable-pythoninterp=yes \
+--enable-python3interp=yes \
+--enable-perlinterp=yes \
+--enable-luainterp=yes \
+--enable-cscope \
+--prefix=/usr/local/bin \
+--with-xpm \
+--with-features=big \
+--enable-terminal \
+--enable-clipboard
+
+mount -t fuse.vmhgfs-fuse .host:/ /mnt/hgfs/
+tips() {
+	find .  -name "*.c" ! -path "./path1/*" ! -path "./path2/*" -o -name "*.h" ! -path "./path1/*" ! -path "./path2/*" > cscope.files && cscope -bkqi cscope.files && ctags -R --links=yes --exclude=path1 --exclude=path2
+}
+tips() {
+	ctags -R --languages=C --links=yes --exclude=path . && awk -F'\t' '{print $2}' tags | sort | uniq > cscope.files && cscope -bkqi  cscope.files
+}

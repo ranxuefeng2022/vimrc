@@ -1,0 +1,124 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ANY_VOTER1	main.c	41;"	d	file:
+ANY_VOTER2	main.c	42;"	d	file:
+CHARGER_PLUG_VOTER	voter.h	12;"	d
+CHARGER_TYPE_VOTER	voter.h	13;"	d
+DEBUG_FORCE_CLIENT	voter.c	17;"	d	file:
+FFC_VOTER	voter.h	19;"	d
+FG_I2C_VOTER	voter.h	23;"	d
+FV_DEC_VOTER	voter.h	24;"	d
+HW_LIMIT_VOTER	voter.h	14;"	d
+JEITA_CHARGE_VOTER	voter.h	16;"	d
+LOG_DBG	main.c	32;"	d	file:
+LOG_ERR	main.c	20;"	d	file:
+LOG_INFO	main.c	26;"	d	file:
+MIN_VOTER1	main.c	39;"	d	file:
+MIN_VOTER2	main.c	40;"	d	file:
+NUM_MAX_CLIENTS	voter.c	16;"	d	file:
+NUM_VOTABLE_TYPES	voter.h	/^	NUM_VOTABLE_TYPES,$/;"	e	enum:votable_type
+PDM_VOTER	voter.h	15;"	d
+SIC_VOTER	voter.h	21;"	d
+SLAVE_CON_ERR_VOTER	voter.h	22;"	d
+STEP_CHARGE_VOTER	voter.h	18;"	d
+THERMAL_VOTER	voter.h	17;"	d
+TYPEC_BURN_VOTER	voter.h	20;"	d
+VOTE_MAX	voter.h	/^	VOTE_MAX,$/;"	e	enum:votable_type
+VOTE_MIN	voter.h	/^	VOTE_MIN,$/;"	e	enum:votable_type
+VOTE_SET_ANY	voter.h	/^	VOTE_SET_ANY,$/;"	e	enum:votable_type
+__PMIC_VOTER_H	voter.h	8;"	d
+callback	voter.c	/^	int			(*callback)(struct votable *votable,$/;"	m	struct:votable	file:
+client_strs	voter.c	/^	char			*client_strs[NUM_MAX_CLIENTS];$/;"	m	struct:votable	file:
+client_vote	voter.c	/^struct client_vote {$/;"	s	file:
+create_votable	voter.c	/^EXPORT_SYMBOL_GPL(create_votable);$/;"	v
+create_votable	voter.c	/^struct votable *create_votable(const char *name,$/;"	f
+data	voter.c	/^	void			*data;$/;"	m	struct:votable	file:
+dddd-objs	Makefile	/^dddd-objs := main.o voter.o$/;"	m
+debug_level	main.c	/^	int debug_level;$/;"	m	struct:demo_chip	file:
+debug_root	voter.c	/^static struct dentry *debug_root;$/;"	v	typeref:struct:dentry	file:
+demo_chip	main.c	/^struct demo_chip {$/;"	s	file:
+demo_delayed_work	main.c	/^static void demo_delayed_work(struct work_struct *work)$/;"	f	file:
+demo_event_work	main.c	/^static void demo_event_work(struct work_struct *work)$/;"	f	file:
+demo_exit	main.c	/^module_exit(demo_exit);$/;"	v
+demo_exit	main.c	/^static void __exit demo_exit(void) {$/;"	f	file:
+demo_init	main.c	/^module_init(demo_init);$/;"	v
+demo_init	main.c	/^static int __init demo_init(void) {$/;"	f	file:
+demo_nb	main.c	/^	struct notifier_block demo_nb;$/;"	m	struct:demo_chip	typeref:struct:demo_chip::notifier_block	file:
+demo_notifier_broadcast	main.c	/^void demo_notifier_broadcast(unsigned long event, void *data)$/;"	f
+demo_notifier_cb	main.c	/^static int demo_notifier_cb(struct notifier_block *nb,$/;"	f	file:
+demo_reg_notifier	main.c	/^int demo_reg_notifier(struct notifier_block *nb)$/;"	f
+demo_unreg_notifier	main.c	/^void demo_unreg_notifier(struct notifier_block *nb)$/;"	f
+demo_votable_any	main.c	/^static int demo_votable_any(struct votable *votable, void *data, int value, const char *client)$/;"	f	file:
+demo_votable_max	main.c	/^static int demo_votable_max(struct votable *votable, void *data, int value, const char *client)$/;"	f	file:
+demo_votable_min	main.c	/^static int demo_votable_min(struct votable *votable, void *data, int value, const char *client)$/;"	f	file:
+demo_work	main.c	/^static void demo_work(struct work_struct *work)$/;"	f	file:
+destroy_votable	voter.c	/^EXPORT_SYMBOL_GPL(destroy_votable);$/;"	v
+destroy_votable	voter.c	/^void destroy_votable(struct votable *votable)$/;"	f
+dev	main.c	/^	struct device *dev;$/;"	m	struct:demo_chip	typeref:struct:demo_chip::device	file:
+dwork	main.c	/^	struct delayed_work dwork;$/;"	m	struct:demo_chip	typeref:struct:demo_chip::delayed_work	file:
+effective_client_id	voter.c	/^	int			effective_client_id;$/;"	m	struct:votable	file:
+effective_client_open	voter.c	/^static int effective_client_open(struct inode *inode, struct file *file)$/;"	f	file:
+effective_client_ops	voter.c	/^static const struct file_operations effective_client_ops = {$/;"	v	typeref:struct:file_operations	file:
+effective_result	voter.c	/^	int			effective_result;$/;"	m	struct:votable	file:
+enabled	voter.c	/^	bool	enabled;$/;"	m	struct:client_vote	file:
+event_work	main.c	/^	struct delayed_work event_work;$/;"	m	struct:demo_chip	typeref:struct:demo_chip::delayed_work	file:
+event_wq	main.c	/^	struct workqueue_struct *event_wq;$/;"	m	struct:demo_chip	typeref:struct:demo_chip::workqueue_struct	file:
+find_votable	voter.c	/^EXPORT_SYMBOL(find_votable);$/;"	v
+find_votable	voter.c	/^struct votable *find_votable(const char *name)$/;"	f
+force_active	voter.c	/^	bool			force_active;$/;"	m	struct:votable	file:
+force_active_get	voter.c	/^static int force_active_get(void *data, u64 *val)$/;"	f	file:
+force_active_set	voter.c	/^static int force_active_set(void *data, u64 val)$/;"	f	file:
+force_val	voter.c	/^	u32			force_val;$/;"	m	struct:votable	file:
+g_pdev	main.c	/^static struct platform_device g_pdev;$/;"	v	typeref:struct:platform_device	file:
+get_client_id	voter.c	/^static int get_client_id(struct votable *votable, const char *client_str)$/;"	f	file:
+get_client_str	voter.c	/^static char *get_client_str(struct votable *votable, int client_id)$/;"	f	file:
+get_client_vote	voter.c	/^EXPORT_SYMBOL(get_client_vote);$/;"	v
+get_client_vote	voter.c	/^int get_client_vote(struct votable *votable, const char *client_str)$/;"	f
+get_client_vote_locked	voter.c	/^int get_client_vote_locked(struct votable *votable, const char *client_str)$/;"	f
+get_effective_client	voter.c	/^const char *get_effective_client(struct votable *votable)$/;"	f
+get_effective_client_locked	voter.c	/^const char *get_effective_client_locked(struct votable *votable)$/;"	f
+get_effective_result	voter.c	/^EXPORT_SYMBOL(get_effective_result);$/;"	v
+get_effective_result	voter.c	/^int get_effective_result(struct votable *votable)$/;"	f
+get_effective_result_locked	voter.c	/^int get_effective_result_locked(struct votable *votable)$/;"	f
+is_client_vote_enabled	voter.c	/^bool is_client_vote_enabled(struct votable *votable, const char *client_str)$/;"	f
+is_client_vote_enabled_locked	voter.c	/^bool is_client_vote_enabled_locked(struct votable *votable,$/;"	f
+is_override_vote_enabled	voter.c	/^bool is_override_vote_enabled(struct votable *votable)$/;"	f
+is_override_vote_enabled_locked	voter.c	/^bool is_override_vote_enabled_locked(struct votable *votable)$/;"	f
+list	voter.c	/^	struct list_head	list;$/;"	m	struct:votable	typeref:struct:votable::list_head	file:
+lock_votable	voter.c	/^void lock_votable(struct votable *votable)$/;"	f
+log_level	main.c	/^static int log_level = 1;$/;"	v	file:
+module_int	main.c	/^static int module_int = 10;$/;"	v	file:
+module_str	main.c	/^static char *module_str = "hello";$/;"	v	file:
+name	voter.c	/^	const char		*name;$/;"	m	struct:votable	file:
+num_clients	voter.c	/^	int			num_clients;$/;"	m	struct:votable	file:
+override_client	voter.c	/^	const char		*override_client;$/;"	m	struct:votable	file:
+override_result	voter.c	/^	int			override_result;$/;"	m	struct:votable	file:
+rerun_election	voter.c	/^int rerun_election(struct votable *votable)$/;"	f
+root	voter.c	/^	struct dentry		*root;$/;"	m	struct:votable	typeref:struct:votable::dentry	file:
+show_effective_client	voter.c	/^static int show_effective_client(struct seq_file *m, void *data)$/;"	f	file:
+show_votable_clients	voter.c	/^static int show_votable_clients(struct seq_file *m, void *data)$/;"	f	file:
+sys_work	main.c	/^	struct work_struct sys_work;$/;"	m	struct:demo_chip	typeref:struct:demo_chip::work_struct	file:
+this_chip	main.c	/^static struct demo_chip *this_chip;$/;"	v	typeref:struct:demo_chip	file:
+type	voter.c	/^	int			type;$/;"	m	struct:votable	file:
+unlock_votable	voter.c	/^void unlock_votable(struct votable *votable)$/;"	f
+value	voter.c	/^	int	value;$/;"	m	struct:client_vote	file:
+votable	voter.c	/^struct votable {$/;"	s	file:
+votable_any	main.c	/^	struct votable *votable_any;$/;"	m	struct:demo_chip	typeref:struct:demo_chip::votable	file:
+votable_max	main.c	/^	struct votable *votable_max;$/;"	m	struct:demo_chip	typeref:struct:demo_chip::votable	file:
+votable_min	main.c	/^	struct votable *votable_min;$/;"	m	struct:demo_chip	typeref:struct:demo_chip::votable	file:
+votable_status_open	voter.c	/^static int votable_status_open(struct inode *inode, struct file *file)$/;"	f	file:
+votable_status_ops	voter.c	/^static const struct file_operations votable_status_ops = {$/;"	v	typeref:struct:file_operations	file:
+votable_type	voter.h	/^enum votable_type {$/;"	g
+vote	voter.c	/^EXPORT_SYMBOL_GPL(vote);$/;"	v
+vote	voter.c	/^int vote(struct votable *votable, const char *client_str, bool enabled, int val)$/;"	f
+vote_lock	voter.c	/^	struct mutex		vote_lock;$/;"	m	struct:votable	typeref:struct:votable::mutex	file:
+vote_max	voter.c	/^static void vote_max(struct votable *votable, int client_id,$/;"	f	file:
+vote_min	voter.c	/^static void vote_min(struct votable *votable, int client_id,$/;"	f	file:
+vote_override	voter.c	/^int vote_override(struct votable *votable, const char *override_client,$/;"	f
+vote_set_any	voter.c	/^static void vote_set_any(struct votable *votable, int client_id,$/;"	f	file:
+voted_on	voter.c	/^	bool			voted_on;$/;"	m	struct:votable	file:
+votes	voter.c	/^	struct client_vote	votes[NUM_MAX_CLIENTS];$/;"	m	struct:votable	typeref:struct:votable::client_vote	file:

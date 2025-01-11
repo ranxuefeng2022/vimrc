@@ -1,0 +1,356 @@
+set runtimepath^=~/.vim
+call plug#begin('~/.vim/plugged')
+Plug 'skywind3000/asyncrun.vim'
+
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
+Plug 'vim-scripts/taglist.vim'
+Plug 'tomasr/molokai'
+Plug 'preservim/nerdtree'
+
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+
+Plug 'easymotion/vim-easymotion'
+Plug 'haya14busa/incsearch-easymotion.vim'
+
+Plug 'git@github.com:vim-scripts/c.vim.git'
+Plug 'vim-scripts/c.vim'
+
+Plug 'voldikss/vim-floaterm'
+Plug 'francoiscabrol/ranger.vim'
+
+Plug 'matze/vim-move'
+
+Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
+Plug 'junegunn/gv.vim'
+
+Plug 'terryma/vim-multiple-cursors'
+Plug 'mg979/vim-visual-multi'
+
+Plug 'preservim/tagbar'
+Plug 'kshenoy/vim-signature'
+Plug 'terryma/vim-expand-region'
+call plug#end()
+filetype indent off
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+iab xdate <C-r>=strftime("20%y-%m-%d %H:%M:%S")<cr>
+
+function! LoadTags()
+	call system("mv tags/* .")
+	let tags = ""
+	for tagfile in split(glob("tag_2025_Will_Rich_*"), "\n")
+		if stridx(&tags, tagfile) == -1
+			let tags .= tagfile . ","
+		endif
+	endfor
+
+	let tags = substitute(tags, ',$', '', '')
+	execute "set tags+=" . tags
+endfunction
+
+function! GenerateTags()
+	call system("mkdir tags")
+	execute 'silent AsyncRun -mode=0 bash ~/tags.sh'
+	autocmd User AsyncRunStop silent! call LoadTags()
+endfunction
+
+function! VisualSelection(direction, extra_filter) range
+    let l:saved_reg = @"
+    execute "normal! vgvy"
+    let l:pattern = escape(@", "\\/.*'$^~[]")
+    let l:pattern = substitute(l:pattern, "\n$", "", "")
+    if a:direction == 'gv'
+        call CmdLine("Ack '" . l:pattern . "' " )
+    elseif a:direction == 'replace'
+        call CmdLine("%s" . '/'. l:pattern . '/')
+    endif
+    let @/ = l:pattern
+    let @" = l:saved_reg
+endfunction
+
+function! Togglefunc1()
+  execute g:param1 ? "set nu relativenumber list" : "set nonu norelativenumber nolist"
+  let g:param1 = !g:param1
+endfunction
+
+function! s:config_easyfuzzymotion(...) abort
+  return extend(copy({
+  \   'converters': [incsearch#config#fuzzyword#converter()],
+  \   'modules': [incsearch#config#easymotion#module({'overwin': 1})],
+  \   'keymap': {"\<CR>": '<Over>(easymotion)'},
+  \   'is_expr': 0,
+  \   'is_stay': 1
+  \ }), get(a:, 1, {}))
+endfunction
+
+function! HighlightSelectedText()
+	let saved_reg = getreg('"')
+	let saved_regtype = getregtype('"')
+	let pos =getpos(".")
+	normal! gv"xy
+	call setreg('"', saved_reg, saved_regtype)
+	call setpos('.', pos)
+	let keyword = @x
+	execute 'match WarningMsg /' . keyword . '/'
+endfunction
+
+function! GitStatus()
+let [a,m,r] = GitGutterGetHunkSummary()
+return printf('+%d ~%d -%d', a, m, r)
+endfunction
+
+function! s:execute_command()
+  let commands = readfile(expand('~/.vim/commands.txt'))
+  call fzf#run(fzf#wrap({
+    \ 'source': commands,
+    \ 'sink': function('s:execute_selected_command')
+  \ }))
+endfunction
+
+function! s:execute_selected_command(command)
+  execute a:command
+endfunction
+
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg --threads 100 -L --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
+  \   fzf#vim#with_preview(), <bang>0)
+
+let g:fzf_vim = {}
+let g:fzf_follow_links = 1
+let g:fzf_vim_dir = expand('%:p:h')
+let $FZF_DEFAULT_OPTS='--height 100% --layout=reverse'
+let g:fzf_layout = { 'down': '50%' }
+let g:fzf_buffers_jump = 1
+let g:fzf_action = {
+  \ 'ctrl-x': 'split',
+  \ 'ctrl-v': 'vsplit',
+  \ 'ctrl-t': 'tabnew' }
+
+let mapleader = " "
+let g:Lf_FollowLinks = 1
+let NERDTreeOpenOnStartup=0
+let NERDTreeWinPos="left"
+let g:param1= 0
+let g:airline#extensions#tabline#fnamemod = ':t'
+let g:airline#tabline#enabled = 1
+let g:airline_left_sep = '»'
+let g:airline_right_sep = '«'
+let g:airline#extensions#tabline#left_sep = ' '
+let g:airline#extensions#tabline#left_alt_sep = '|'
+let g:airline#extensions#tabline#formatter = 'default'
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#show_buffers = 1
+let g:airline#extensions#tabline#buffer_idx_mode = 1
+let g:airline#extensions#tabline#show_tab_nr = 1
+let g:airline_theme='powerlineish'
+let g:airline_powerline_fonts = 1
+let g:airline_section_c = '%{getcwd()}'
+
+let g:tagbar_position = 'left'
+let Tlist_WinWidth = 50
+let Tlist_Use_SingleClick = 1
+let Tlist_Use_Right_Window = 0
+let Tlist_WinWidth = 50
+
+let g:tagbar_singleclick = 1
+let g:tagbar_autoclose = 0
+
+let g:fzf_vim = {}
+let g:fzf_follow_links = 1
+let g:fzf_vim_dir = expand('%:p:h')
+let g:EasyMotion_do_mapping = 0
+let g:EasyMotion_smartcase = 1
+let g:EasyMotion_use_smartsign_us = 1 " US layout
+let g:fzf_preview_window = []
+let $FZF_DEFAULT_OPTS='--height 100% --layout=reverse'
+let g:move_key_modifier_visualmode = 'S'
+let loaded_matchparen=1
+let g:ranger_map_keys = 0
+
+let g:floaterm_width = 0.99  " 宽度为屏幕的 80%
+let g:floaterm_height = 0.99 " 高度为屏幕的 60%
+let g:floaterm_autoinsert = 1
+let g:floaterm_autohide = 1
+let g:floaterm_autoclose = 2
+let current_file_dir = expand('%:p:h')
+let current_working_dir = getcwd()
+
+highlight WarningMsg ctermfg=yellow guifg=yellow
+highlight clear SignColumn
+highlight clear LineNr
+
+cabbrev rg Rg
+cabbre git Git
+
+vnoremap <silent> * :<C-u>call VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>N
+vnoremap <silent> # :<C-u>call VisualSelection('', '')<CR>?<C-R>=@/<CR><CR>N
+
+nnoremap <leader><leader> :BTags<CR>
+nnoremap <leader>f :Files<CR>
+nnoremap <leader>r :Buffers<CR>
+
+nnoremap <C-h> :tabprevious<CR>
+nnoremap <C-l> :tabnext<CR>
+vnoremap <C-h> :tabprevious<CR>
+vnoremap <C-l> :tabnext<CR>
+
+nnoremap <C-@> :
+nnoremap <C-w> <C-w>w
+nnoremap u :u<cr>:w<cr>
+vnoremap < <gv
+vnoremap > >gv
+vnoremap $ $h
+
+vnoremap y "ay
+vnoremap p "ap
+nnoremap p "ap
+nnoremap Z ZZ
+inoremap jj <Esc>
+vnoremap <Rightmouse> "ay
+nnoremap <Rightmouse> "aP
+
+vnoremap <Up> <Nop>
+vnoremap <Down> <Nop>
+vnoremap <Left> <Nop>
+vnoremap <Right> <Nop>
+
+nnoremap <Up> <Nop>
+nnoremap <Down> <Nop>
+nnoremap <Left> <Nop>
+nnoremap <Right> <Nop>
+
+inoremap <Up> <Nop>
+inoremap <Down> <Nop>
+inoremap <Left> <Nop>
+inoremap <Right> <Nop>
+
+inoremap <C-h> <left>
+inoremap <C-j> <down>
+inoremap <C-k> <up>
+inoremap <C-l> <right>
+
+nnoremap <C-Space> :
+inoremap <C-Space> <C-n>
+
+nnoremap <S-h> :vertical resize -3<CR>
+nnoremap <S-l> :vertical resize +3<CR>
+nnoremap <S-j> :resize +3<CR>
+nnoremap <S-k> :resize -3<CR>
+nnoremap <silent> <leader>no :call Togglefunc1()<CR>
+vnoremap<C-c> :w! ~/.vim/cvbuf.c<CR>
+nnoremap<C-v> :r ~/.vim/cvbuf.c<CR>
+
+nnoremap a <C-]>zz
+nnoremap # #N
+nnoremap n nzz
+nnoremap N Nzz
+nnoremap j jzz
+nnoremap k kzz
+nnoremap w wzz
+
+nnoremap <silent><expr> <Space>/ incsearch#go(<SID>config_easyfuzzymotion())
+nnoremap<leader>t :FloatermToggle<CR>
+vnoremap h :call HighlightSelectedText() <CR> 
+vnoremap <S-j> :m '>+1<CR>gv=gv
+vnoremap <S-k> :m '<-2<CR>gv=gv
+nnoremap f <C-o>zz
+nnoremap a <C-]>zz
+nnoremap F [[k2wzz
+
+nnoremap <leader>s :Rg <C-r><C-w> = <CR>
+vnoremap <leader>s y:Rg <C-r>" = <CR>
+vnoremap R y:Rg <C-r>"<CR>
+nnoremap R :Rg <C-r><C-w><CR>
+
+autocmd BufWritePost * GitGutter
+autocmd InsertLeave * silent! write
+autocmd FocusGained,BufEnter * silent! checktime
+autocmd BufRead,BufNewFile * source ~/.vim/plugged/c.vim/ftplugin/c.vim
+autocmd BufRead,BufNewFile * source ~/.vim/plugged/c.vim/ftplugin/make.vim
+autocmd BufRead,BufNewFile *  hi Visual ctermfg=darkblue ctermbg=black
+autocmd BufRead,BufNewFile *  hi Search ctermfg=yellow ctermbg=black
+autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+autocmd InsertLeave * if pumvisible() == 0|pclose|endif
+autocmd vimEnter * execute 'cd' expand('%:p:h')
+autocmd VimLeave * call system("mv *_2025_Will_Rich_* tags/")
+autocmd BufRead * silent! call LoadTags()
+autocmd Syntax * source ~/.vim/plugged/c.vim/ftplugin/c.vim
+autocmd User FloatermExit :FloatermNew --autoclose=0 exit 0
+
+map ce :Rg<cr>
+map cf :NERDTreeFind<cr>
+map cc :TagbarToggle<cr>
+map cs :sp<cr>
+map cv :vsp<cr>
+map ca :Ranger<cr>
+map cq :copen 20<cr>
+map cl :call system('rm -rf *2025_Will_Rich_* tags \n')<cr>
+map ct :call GenerateTags()<cr>
+map E <Plug>(expand_region_expand)
+map t :call <SID>execute_command()<CR>
+map s <Plug>(easymotion-overwin-f2)
+
+syntax on
+syntax enable
+colorscheme molokai
+
+set t_Co=256
+set mousetime=1
+set mouse=a
+set hlsearch
+set background=dark
+set ai
+set cindent
+set nocompatible
+set encoding=utf-8
+set showcmd
+set ruler
+set incsearch
+set showmatch
+set matchtime=10
+set nowrapscan
+set helplang=cn
+set langmenu=zh_CN.UTF-8
+set noswapfile
+set nowb
+set mousemodel=extend
+set smartcase
+set signcolumn=yes
+set title
+set tabstop=4
+set shiftwidth=4
+set nowritebackup
+set nobackup
+set noautowrite
+set history=50
+set copyindent
+set ttyfast
+set report=0
+set synmaxcol=200
+set autoread
+set foldcolumn=0
+set lazyredraw
+set lbr
+set tw=500
+set ai "Auto indent
+set nu
+set relativenumber
+set si "Smart indent
+set wrap "Wrap lines
+set switchbuf+=useopen
+set switchbuf+=usetab
+set wildignore+=.*
+set foldenable
+set foldmethod=manual
+set sessionoptions-=options
+set completeopt=longest,menu
+set list
+set listchars=tab:›\ ,trail:.,extends:#,nbsp:.
+set dictionary+=~/.vim/words
+set fileencodings=utf-8,gbk,gb18030,gb2312,ucs-bom,cp936,latin1
+set hid
+set pastetoggle=<F10>
