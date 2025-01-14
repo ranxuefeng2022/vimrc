@@ -163,16 +163,22 @@ function! s:config_easyfuzzymotion(...) abort
   \ }), get(a:, 1, {}))
 endfunction
 
-function! s:execute_command()
-  let commands = readfile(expand('~/.vim/commands.txt'))
-  call fzf#run(fzf#wrap({
-    \ 'source': commands,
-    \ 'sink': function('s:execute_selected_command')
-  \ }))
-endfunction
-
 function! s:execute_selected_command(command)
   execute a:command
+endfunction
+
+function! s:execute_command()
+	let g:command_list = [
+		\ ':Git blame',
+		\ ':BLines',
+		\ ':Lines',
+		\ ':Rg',
+		\ ':so $VIMRUNTIME/syntax/colortest.vim',
+		\ ]
+	call fzf#run(fzf#wrap({
+		\ 'source': g:command_list,
+		\ 'sink': function('s:execute_selected_command')
+		\ }))
 endfunction
 
 command! -bang -nargs=* Rg
@@ -320,6 +326,7 @@ nnoremap R :Rg <C-r><C-w><CR>
 
 "vnoremap h :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
 vnoremap <silent> # y/<C-r>"<CR>Nzz
+
 
 map ce :Rg<cr>
 map cf :NERDTreeFind<cr>
