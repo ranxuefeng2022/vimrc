@@ -2,9 +2,6 @@ set runtimepath^=~/.vim
 call plug#begin('~/.vim/plugged')
 Plug 'skywind3000/asyncrun.vim'
 
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-
 Plug 'vim-scripts/taglist.vim'
 Plug 'tomasr/molokai'
 Plug 'preservim/nerdtree'
@@ -46,10 +43,14 @@ set mouse=a
 set hlsearch
 set ai
 set cindent
+set linebreak
 set nocompatible
+set sidescroll=5
 set encoding=utf-8
 set showcmd
 set ruler
+set cursorline
+set cursorlineopt=number
 set incsearch
 set showmatch
 set matchtime=10
@@ -81,7 +82,7 @@ set ai "Auto indent
 set nu
 set relativenumber
 set si "Smart indent
-set wrap "Wrap lines
+set nowrap "Wrap lines
 set switchbuf+=useopen
 set switchbuf+=usetab
 set wildignore+=.*
@@ -95,6 +96,8 @@ set dictionary+=~/.vim/words
 set fileencodings=utf-8,gbk,gb18030,gb2312,ucs-bom,cp936,latin1
 set hid
 set pastetoggle=<F10>
+set laststatus=2
+set statusline+=%#StatusLinePath#%{getcwd()}/..\%t%m/\%{fugitive#statusline()}/\%{&fenc}/\%b
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 iab xdate <C-r>=strftime("20%y-%m-%d %H:%M:%S")<cr>
@@ -186,11 +189,12 @@ command! -bang -nargs=* Rg
   \   'rg --threads 60 -L --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
   \   fzf#vim#with_preview(), <bang>0)
 
+let g:fzf_preview_window = ['up:50%', 'ctrl-/']
+let g:fzf_layout = { 'window': 'enew' }
 let g:fzf_vim = {}
 let g:fzf_follow_links = 1
 let g:fzf_vim_dir = expand('%:p:h')
 let $FZF_DEFAULT_OPTS='--height 100% --layout=reverse'
-let g:fzf_layout = { 'down': '50%' }
 let g:fzf_buffers_jump = 1
 let g:fzf_action = {
   \ 'ctrl-x': 'split',
@@ -203,19 +207,6 @@ let NERDTreeOpenOnStartup=0
 let NERDTreeWinPos="left"
 let g:param1= 0
 
-let g:airline#extensions#tabline#fnamemod = ':t'
-let g:airline#tabline#enabled = 1
-let g:airline_left_sep = '»'
-let g:airline_right_sep = '«'
-let g:airline#extensions#tabline#left_sep = ' '
-let g:airline#extensions#tabline#left_alt_sep = '|'
-let g:airline#extensions#tabline#enabled = 1
-let g:airline_theme='powerlineish'
-let g:airline_section_c = '%{getcwd()}'
-let g:airline_highlighting = 0
-let g:airline#extensions#whitespace#enabled = 0
-let g:airline#extensions#ale#enabled = 0     " 禁用 ALE 扩展
-
 let g:tagbar_position = 'left'
 let Tlist_WinWidth = 50
 let Tlist_Use_SingleClick = 1
@@ -225,13 +216,9 @@ let Tlist_WinWidth = 50
 let g:tagbar_singleclick = 1
 let g:tagbar_autoclose = 0
 
-let g:fzf_vim = {}
-let g:fzf_follow_links = 1
-let g:fzf_vim_dir = expand('%:p:h')
 let g:EasyMotion_do_mapping = 0
 let g:EasyMotion_smartcase = 1
 let g:EasyMotion_use_smartsign_us = 1 " US layout
-let g:fzf_preview_window = []
 let $FZF_DEFAULT_OPTS='--height 100% --layout=reverse'
 let g:move_key_modifier_visualmode = 'S'
 let loaded_matchparen=1
@@ -324,8 +311,14 @@ vnoremap <leader>s y:Rg <C-r>" = <CR>
 vnoremap R y:Rg <C-r>"<CR>
 nnoremap R :Rg <C-r><C-w><CR>
 
-"vnoremap h :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
+vnoremap H :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
 vnoremap <silent> # y/<C-r>"<CR>Nzz
+nnoremap <F1> zh
+nnoremap <F2> zl
+vnoremap <F1> zh
+vnoremap <F2> zl
+inoremap <F1> zh
+inoremap <F2> zl
 
 
 map ce :Rg<cr>
@@ -345,8 +338,6 @@ autocmd InsertLeave * silent! write
 autocmd FocusGained,BufEnter * silent! checktime
 autocmd BufRead,BufNewFile * source ~/.vim/plugged/c.vim/ftplugin/c.vim
 autocmd BufRead,BufNewFile * source ~/.vim/plugged/c.vim/ftplugin/make.vim
-"autocmd BufRead,BufNewFile *  hi Visual ctermfg=darkblue ctermbg=black
-"autocmd BufRead,BufNewFile *  hi Search ctermfg=darkblue ctermbg=black
 autocmd BufRead,BufNewFile *  hi LineNr ctermfg=yellow
 autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 autocmd InsertLeave * if pumvisible() == 0|pclose|endif
@@ -355,9 +346,11 @@ autocmd VimLeave * call system("mv *_2025_Will_Rich_* tags/")
 autocmd BufRead * silent! call LoadTags()
 autocmd Syntax * source ~/.vim/plugged/c.vim/ftplugin/c.vim
 autocmd User FloatermExit :FloatermNew --autoclose=0 exit 0
-
 autocmd BufRead,BufNewFile *  hi clear SignColumn
 autocmd BufRead,BufNewFile *  hi clear LineNr
-autocmd BufRead,BufNewFile *  hi CursorLineNr ctermfg=yellow ctermbg=black
 
-"for i in {0..255}; do printf "\e[48;5;%sm%3d " "$i" "$i"; (( (i + 1) % 16 == 0 )) && printf "\e[0m\n"; done; printf "\e[0m\n" "256 color print
+hi CursorLineNr ctermfg=2
+hi TabLine      ctermfg=2 ctermbg=233
+hi TabLineSel   ctermfg=118
+hi TabLineFill  ctermfg=233
+hi StatusLinePath ctermbg=234 ctermfg=2
