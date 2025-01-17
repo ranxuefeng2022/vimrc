@@ -1,6 +1,7 @@
 set runtimepath^=~/.vim
 call plug#begin('~/.vim/plugged')
 Plug 'skywind3000/asyncrun.vim'
+Plug 'Yggdroot/LeaderF'
 
 Plug 'vim-scripts/taglist.vim'
 Plug 'tomasr/molokai'
@@ -50,6 +51,7 @@ set encoding=utf-8
 set showcmd
 set ruler
 set cursorline
+set showtabline=0
 set cursorlineopt=number
 set incsearch
 set showmatch
@@ -97,7 +99,7 @@ set fileencodings=utf-8,gbk,gb18030,gb2312,ucs-bom,cp936,latin1
 set hid
 set pastetoggle=<F10>
 set laststatus=2
-set statusline+=%#StatusLinePath#%{getcwd()}/..\%t%m/\%{fugitive#statusline()}/\%{&fenc}/\%b
+set statusline+=%#StatusLinePath#%{getcwd()}/%m/%{fugitive#statusline()}/%{&fenc}/%b/%#StatusLineFileName#%t
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 iab xdate <C-r>=strftime("20%y-%m-%d %H:%M:%S")<cr>
@@ -147,7 +149,7 @@ endfunction
 
 function! GenerateTags()
 	call system("mkdir tags")
-	execute 'silent AsyncRun -mode=0 bash ~/tags.sh'
+	execute 'silent AsyncRun -mode=0 bash ~/.vim/tags.sh'
 	autocmd User AsyncRunStop silent! call LoadTags()
 endfunction
 
@@ -171,22 +173,24 @@ function! s:execute_selected_command(command)
 endfunction
 
 function! s:execute_command()
-	let g:command_list = [
-		\ ':Git blame',
-		\ ':BLines',
-		\ ':Lines',
-		\ ':Rg',
-		\ ':so $VIMRUNTIME/syntax/colortest.vim',
-		\ ]
-	call fzf#run(fzf#wrap({
-		\ 'source': g:command_list,
-		\ 'sink': function('s:execute_selected_command')
-		\ }))
+ let g:command_list = [
+  \ ':Git blame',
+  \ ':BLines',
+  \ ':LeaderfLine',
+  \ ':Lines',
+  \ ':BCommits',
+  \ ':Commits',
+  \ ':Rg',
+  \ ]
+ call fzf#run(fzf#wrap({
+  \ 'source': g:command_list,
+  \ 'sink': function('s:execute_selected_command')
+  \ }))
 endfunction
 
 command! -bang -nargs=* Rg
   \ call fzf#vim#grep(
-  \   'rg --threads 60 -L --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
+  \   'rg --threads 79 -L  --column --line-number --no-heading --color=always --smart-case  '.shellescape(<q-args>), 1,
   \   fzf#vim#with_preview(), <bang>0)
 
 let g:fzf_preview_window = ['up:50%', 'ctrl-/']
@@ -206,6 +210,7 @@ let g:Lf_FollowLinks = 1
 let NERDTreeOpenOnStartup=0
 let NERDTreeWinPos="left"
 let g:param1= 0
+let g:initial_directory_set = 0
 
 let g:tagbar_position = 'left'
 let Tlist_WinWidth = 50
@@ -236,6 +241,8 @@ cabbrev rg Rg
 cabbre git Git
 
 nnoremap <leader><leader> :BTags<CR>
+nnoremap <leader>l :LeaderfBufTag<CR>
+nnoremap <leader>L :BTags<CR>
 nnoremap <leader>f :Files<CR>
 nnoremap <leader>r :Buffers<CR>
 
@@ -311,14 +318,14 @@ vnoremap <leader>s y:Rg <C-r>" = <CR>
 vnoremap R y:Rg <C-r>"<CR>
 nnoremap R :Rg <C-r><C-w><CR>
 
-vnoremap H :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
+"vnoremap H :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
 vnoremap <silent> # y/<C-r>"<CR>Nzz
-nnoremap <F1> zh
-nnoremap <F2> zl
-vnoremap <F1> zh
-vnoremap <F2> zl
-inoremap <F1> zh
-inoremap <F2> zl
+nnoremap <F1> 5zh
+nnoremap <F2> 5zl
+vnoremap <F1> 5zh
+vnoremap <F2> 5zl
+inoremap <F1> 5zh
+inoremap <F2> 5zl
 
 
 map ce :Rg<cr>
@@ -348,9 +355,15 @@ autocmd Syntax * source ~/.vim/plugged/c.vim/ftplugin/c.vim
 autocmd User FloatermExit :FloatermNew --autoclose=0 exit 0
 autocmd BufRead,BufNewFile *  hi clear SignColumn
 autocmd BufRead,BufNewFile *  hi clear LineNr
+autocmd BufEnter * if !g:initial_directory_set | silent! lcd %:p:h | let g:initial_directory_set = 1 | endif
 
-hi CursorLineNr ctermfg=2
 hi TabLine      ctermfg=2 ctermbg=233
 hi TabLineSel   ctermfg=118
 hi TabLineFill  ctermfg=233
-hi StatusLinePath ctermbg=234 ctermfg=2
+hi ModeMsg ctermbg=233 ctermfg=2
+hi MoreMsg ctermbg=233 ctermfg=2
+hi Question ctermbg=233 ctermfg=2
+hi StatusLineFileName ctermfg=119
+hi CursorLineNr ctermfg=2
+hi StatusLinePath ctermbg=233 ctermfg=2
+hi Search ctermfg=white ctermbg=darkblue
