@@ -1,1 +1,1 @@
-All things about my knownage
+All things about my knowledge
