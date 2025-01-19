@@ -1,1 +1,1 @@
-# vimrc
+All things about my knownage
