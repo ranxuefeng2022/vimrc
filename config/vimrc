@@ -53,7 +53,10 @@ set showcmd
 set ruler
 set cursorline
 set showtabline=0
+if has('nvim')
 set cursorlineopt=number
+else
+endif
 set incsearch
 set showmatch
 set matchtime=10
@@ -104,6 +107,29 @@ set statusline+=%#StatusLinePath#%{getcwd()}/%m/%{fugitive#statusline()}/%{&fenc
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 iab xdate <C-r>=strftime("20%y-%m-%d %H:%M:%S")<cr>
+
+function! DeleteVisualMatch()
+    " 获取可视模式下选中的内容
+    let [line_start, col_start] = getpos("'<")[1:2]
+    let [line_end, col_end] = getpos("'>")[1:2]
+    let lines = getline(line_start, line_end)
+    if len(lines) == 0
+        return
+    endif
+    let lines[-1] = lines[-1][: col_end - 1]
+    let lines[0] = lines[0][col_start - 1:]
+    let selected_text = join(lines, "\n")
+
+    " 查找匹配 ID 并删除
+    for match in getmatches()
+        if match['pattern'] == selected_text
+            call matchdelete(match['id'])
+            echo "Deleted match ID: " . match['id']
+            return
+        endif
+    endfor
+    echo "No match found for selected text."
+endfunction
 
 function! HighlightWithColorCode(color_code) range
 	let start_line = a:firstline
@@ -324,7 +350,7 @@ vnoremap <leader>s y:Rg <C-r>" = <CR>
 vnoremap R y:Rg <C-r>"<CR>
 nnoremap R :Rg <C-r><C-w><CR>
 
-"vnoremap H :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
+vnoremap h :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
 vnoremap <silent> # y/<C-r>"<CR>Nzz
 nnoremap <F1> 5zh
 nnoremap <F2> 5zl
@@ -334,6 +360,7 @@ inoremap <F1> 5zh
 inoremap <F2> 5zl
 noremap j gj
 noremap k gk
+vnoremap <Leader>dm :call DeleteVisualMatch()<CR>
 
 
 map ce :Rg<cr>
@@ -343,7 +370,9 @@ map cs :sp<cr>
 map cv :vsp<cr>
 map ca :Ranger<cr>
 map cq :copen 20<cr>
-map cl :call system('rm -rf *2025_Will_Rich_* tags \n')<cr>
+map cL :call system('rm -rf *2025_Will_Rich_* tags \n')<cr>
+map cl :colorscheme default<bar>syntax off<cr>
+map co :colorscheme molokai<bar>syntax on<cr>
 map ct :call GenerateTags()<cr>
 map E <Plug>(expand_region_expand)
 map t :call <SID>execute_command()<CR>
@@ -375,3 +404,4 @@ hi StatusLineFileName ctermfg=119
 hi CursorLineNr ctermfg=2
 hi StatusLinePath ctermbg=233 ctermfg=2
 hi Search ctermfg=white ctermbg=darkblue
+let g:python3_host_prog = '~/venv/bin/python3'
