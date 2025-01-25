@@ -1,8 +1,8 @@
-# ==About me==
+# About me
 ***
 I am a linux driver engineer work in a phone maker company, I've been working since 2019-07.
 
-# ==VIM==
+# VIM
 ***
 ## 1. Why you need use vim?
  * It is so fast, I can make use of tens of CPUs and much more memory in my company's code server that does not have in my local windows computer.
