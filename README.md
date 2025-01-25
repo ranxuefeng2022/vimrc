@@ -455,4 +455,7 @@ bind C-a send-prefix
 
 
 
+# If you think this is useful, you can buy me a coffe
+![image](https://github.com/user-attachments/assets/24047241-c219-4c0d-b137-42506eb5a71c)
+
 
