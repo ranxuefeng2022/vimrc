@@ -4,7 +4,7 @@
  * Flexible customization! you can customize your key mapping as you want.
  * Efficiency tools, like fzf.vim ranger Leaderf rg git related plugins .....
  * save your work time, you can modify your code, build your code, and merge your code at only one terminal!
-```c
+```
 set runtimepath^=~/.vim
 call plug#begin('~/.vim/plugged')
 Plug 'rbgrouleff/bclose.vim'
