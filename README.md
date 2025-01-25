@@ -429,7 +429,14 @@ Heres the code looks like:
 
 # tmux
 ***
+## Why you need tmux?
+* It can keep your work safety even if your computer is power off
+* It can create multi sessions/windows/panes as you want and do different work in each place.
+* You can change your session/windows/panes as you want
+* most importantly, you can login your ssh account only once
 
+  Here's the basic tmux config for you:
+  
 ![image](https://github.com/user-attachments/assets/4ef6e2d9-31c1-47f0-ae3e-5ad2ee82e9e2)
 
 Real image
