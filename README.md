@@ -1,9 +1,18 @@
-## Why use vim?
+# ==About me==
+***
+I am a linux driver engineer work in a phone maker company, I've been working since 2019-07.
+
+# ==VIM==
+***
+## 1. Why you need use vim?
  * It is so fast, I can make use of tens of CPUs and much more memory in my company's code server that does not have in my local windows computer.
  * I have used Vscode sourceinsight ever before, all of them costs lots of time to sync my code, but when you use vim in your code server, it only needs serval seconds to generate tags for the whole linux kernel.
  * Flexible customization! you can customize your key mapping as you want.
  * Efficiency tools, like fzf.vim ranger Leaderf rg git related plugins .....
  * save your work time, you can modify your code, build your code, and merge your code at only one terminal!
+   here's my vimrc configuration for you, if don't understand some of theme, you can access these AI websites for answer: 
+   [deepseek](https://chat.deepseek.com/)    |.   [文心一言](https://yiyan.baidu.com/)    |   [kimi](https://kimi.moonshot.cn/)   |.  [蓝心千寻](https://qianxun.vivo.com/#/explore) | [字节豆包](https://www.doubao.com/chat/)   |   [copilot](https://github.com/copilot)   |.  [讯飞星火](https://xinghuo.xfyun.cn/desk)
+   
 ```c
 set runtimepath^=~/.vim
 call plug#begin('~/.vim/plugged')
