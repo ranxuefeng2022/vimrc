@@ -426,3 +426,9 @@ let g:python3_host_prog = '~/venv/bin/python3'
 Heres the code looks like:
 ![image](https://github.com/user-attachments/assets/76bdbaf0-1e0e-4340-a026-637b0dad01e6)
 
+# tmux
+***
+## Why you need tmux?
+***
+
+
