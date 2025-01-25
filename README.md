@@ -10,8 +10,9 @@ I am a linux driver engineer work in a phone maker company, I've been working si
  * Flexible customization! you can customize your key mapping as you want.
  * Efficiency tools, like fzf.vim ranger Leaderf rg git related plugins .....
  * save your work time, you can modify your code, build your code, and merge your code at only one terminal!
-   here's my vimrc configuration for you, if don't understand some of theme, you can access these AI websites for answer: 
-   [deepseek](https://chat.deepseek.com/)    |.   [文心一言](https://yiyan.baidu.com/)    |   [kimi](https://kimi.moonshot.cn/)   |.  [蓝心千寻](https://qianxun.vivo.com/#/explore) | [字节豆包](https://www.doubao.com/chat/)   |   [copilot](https://github.com/copilot)   |.  [讯飞星火](https://xinghuo.xfyun.cn/desk)
+   here's my vimrc configuration for you,
+   If don't understand some of theme, you can access these AI websites for answer: 
+   [deepseek](https://chat.deepseek.com/)    |.   [文心一言](https://yiyan.baidu.com/)    |   [kimi](https://kimi.moonshot.cn/)   |.  [蓝心千寻](https://qianxun.vivo.com/#/explore) | [字节豆包](https://www.doubao.com/chat/)   |   [copilot](https://github.com/copilot)   |.  [讯飞星火](https://xinghuo.xfyun.cn/desk) or click [vimrc](https://github.com/ranxuefeng2022/vimrc/blob/main/config/vimrc)
    
 ```c
 set runtimepath^=~/.vim
