@@ -454,8 +454,8 @@ bind C-a send-prefix
 ![image](https://github.com/user-attachments/assets/4ef6e2d9-31c1-47f0-ae3e-5ad2ee82e9e2)
 
 
-
-# If you think this is useful, you can buy me a coffe
+***
+# If you think this is useful, you can buy me a coffe ^-^
 ![image](https://github.com/user-attachments/assets/24047241-c219-4c0d-b137-42506eb5a71c)
 
 
