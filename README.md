@@ -424,7 +424,8 @@ let g:python3_host_prog = '~/venv/bin/python3'
 ```
 
 Heres the code looks like:
-![image](https://github.com/user-attachments/assets/76bdbaf0-1e0e-4340-a026-637b0dad01e6)
+![image](https://github.com/user-attachments/assets/f7899267-2516-470f-8d39-c12569bb0eb7)
+
 
 # tmux
 ***
