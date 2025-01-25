@@ -436,7 +436,7 @@ Heres the code looks like:
 * most importantly, you can login your ssh account only once
 
   Here's the basic tmux config for you:
-  ```
+```
 set-option -g mouse on
 set-option -g status on
 set-option -g history-limit 10000
@@ -448,10 +448,9 @@ unbind C-a
 set -g prefix C-a
 bind C-a send-prefix
 ```
-![image](https://github.com/user-attachments/assets/4ef6e2d9-31c1-47f0-ae3e-5ad2ee82e9e2)
 
-Real image
-![image](https://github.com/user-attachments/assets/fbf89bf2-a92d-4683-9efd-94795f0eaf52)
+## tmux Breif workflow
+![image](https://github.com/user-attachments/assets/4ef6e2d9-31c1-47f0-ae3e-5ad2ee82e9e2)
 
 
 
