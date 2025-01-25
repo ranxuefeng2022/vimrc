@@ -436,7 +436,18 @@ Heres the code looks like:
 * most importantly, you can login your ssh account only once
 
   Here's the basic tmux config for you:
-  
+  ```
+set-option -g mouse on
+set-option -g status on
+set-option -g history-limit 10000
+bind-key -n M-x resize-pane -Z
+bind-key -n M-a run-shell "tmux select-pane -t :.+ && tmux resize-pane -Z"
+bind-key -n M-w select-window -t :-
+bind-key -n M-s switch-client -n
+unbind C-a
+set -g prefix C-a
+bind C-a send-prefix
+```
 ![image](https://github.com/user-attachments/assets/4ef6e2d9-31c1-47f0-ae3e-5ad2ee82e9e2)
 
 Real image
