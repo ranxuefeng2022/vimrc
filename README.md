@@ -429,7 +429,8 @@ Heres the code looks like:
 
 # tmux
 ***
-## Why you need tmux?
-***
+
+![image](https://github.com/user-attachments/assets/4ef6e2d9-31c1-47f0-ae3e-5ad2ee82e9e2)
+
 
 
