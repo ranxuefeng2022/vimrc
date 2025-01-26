@@ -1,8 +1,6 @@
 # About me
 ***
-I am a linux driver engineer work in a phone maker company, I've been working since 2019-07.
-If there are any good job opportunities, please recommend them to me. I would be extremely grateful!
-This is my resume //未完待续
+I am a linux driver engineer work in a phone maker company, I've been working since 2019-07. 
 
 # VIM
 ***
