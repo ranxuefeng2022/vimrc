@@ -307,6 +307,7 @@ nnoremap <Up> <Nop>
 nnoremap <Down> <Nop>
 nnoremap <Left> <Nop>
 nnoremap <Right> <Nop>
+nnoremap <C-space> /
 
 inoremap <Up> <Nop>
 inoremap <Down> <Nop>
@@ -350,7 +351,7 @@ vnoremap <leader>s y:Rg <C-r>" = <CR>
 vnoremap R y:Rg <C-r>"<CR>
 nnoremap R :Rg <C-r><C-w><CR>
 
-vnoremap h :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
+vnoremap . :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
 vnoremap <silent> # y/<C-r>"<CR>Nzz
 nnoremap <F1> 5zh
 nnoremap <F2> 5zl
@@ -361,6 +362,7 @@ inoremap <F2> 5zl
 noremap j gj
 noremap k gk
 vnoremap <Leader>dm :call DeleteVisualMatch()<CR>
+noremap X gg0v<C-v>Gx
 
 
 map ce :Rg<cr>
@@ -376,6 +378,7 @@ map co :colorscheme molokai<bar>syntax on<cr>
 map ct :call GenerateTags()<cr>
 map E <Plug>(expand_region_expand)
 map t :call <SID>execute_command()<CR>
+map 0 ^
 
 autocmd BufWritePost * GitGutter
 autocmd InsertLeave * silent! write
@@ -405,3 +408,6 @@ hi CursorLineNr ctermfg=2
 hi StatusLinePath ctermbg=233 ctermfg=2
 hi Search ctermfg=white ctermbg=darkblue
 let g:python3_host_prog = '~/venv/bin/python3'
+
+nnoremap <leader>bd :bufdo bd<cr>
+nnoremap <leader>pp :setlocal paste!<cr>
