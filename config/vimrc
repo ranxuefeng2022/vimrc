@@ -35,9 +35,13 @@ Plug 'terryma/vim-expand-region'
 call plug#end()
 filetype indent off
 
+if exists("g:neovide")
+syntax off
+colorscheme zellner
+else
 syntax on
-syntax enable
 colorscheme molokai
+endif
 
 set notermguicolors
 set t_Co=256
@@ -101,8 +105,11 @@ set listchars=tab:›\ ,trail:.,extends:#,nbsp:.
 set dictionary+=~/.vim/words
 set fileencodings=utf-8,gbk,gb18030,gb2312,ucs-bom,cp936,latin1
 set hid
-set pastetoggle=<F10>
+if exists("g:neovide")
+set laststatus=0
+else
 set laststatus=2
+endif
 set statusline+=%#StatusLinePath#%{getcwd()}/%m/%{fugitive#statusline()}/%{&fenc}/%b/%#StatusLineFileName#%t
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -161,6 +168,16 @@ function! HighlightWithColorCode(color_code) range
 
 command! -range -nargs=1 HighlightWithColorCode call HighlightWithColorCode(<f-args>)
 
+
+if exists("g:neovide")
+function! LoadTags()
+ execute "set tags+=" . tags
+endfunction
+
+function! GenerateTags()
+ autocmd User AsyncRunStop silent! call LoadTags()
+endfunction
+else
 function! LoadTags()
 	call system("mv tags/* .")
 	let tags = ""
@@ -179,6 +196,7 @@ function! GenerateTags()
 	execute 'silent AsyncRun -mode=0 bash ~/.vim/tags.sh'
 	autocmd User AsyncRunStop silent! call LoadTags()
 endfunction
+endif
 
 function! Togglefunc1()
   execute g:param1 ? "set nu relativenumber list" : "set nonu norelativenumber nolist"
@@ -290,13 +308,22 @@ vnoremap < <gv
 vnoremap > >gv
 vnoremap $ $h
 
+nnoremap Z ZZ
+inoremap jj <Esc>
+
+if exists("g:neovide")
+vnoremap y "+y
+vnoremap p "+p
+nnoremap p "+p
+vnoremap <Rightmouse> "+y
+nnoremap <Rightmouse> "+P
+else
 vnoremap y "ay
 vnoremap p "ap
 nnoremap p "ap
-nnoremap Z ZZ
-inoremap jj <Esc>
 vnoremap <Rightmouse> "ay
 nnoremap <Rightmouse> "aP
+endif
 
 vnoremap <Up> <Nop>
 vnoremap <Down> <Nop>
@@ -359,11 +386,7 @@ vnoremap <F1> 5zh
 vnoremap <F2> 5zl
 inoremap <F1> 5zh
 inoremap <F2> 5zl
-noremap j gj
-noremap k gk
 vnoremap <Leader>dm :call DeleteVisualMatch()<CR>
-noremap X gg0v<C-v>Gx
-
 
 map ce :Rg<cr>
 map cf :NERDTreeFind<cr>
@@ -411,3 +434,63 @@ let g:python3_host_prog = '~/venv/bin/python3'
 
 nnoremap <leader>bd :bufdo bd<cr>
 nnoremap <leader>pp :setlocal paste!<cr>
+
+" ~/.config/nvim/init.vim
+" ======================= NEVIDIA 专属配置 =======================
+" 启用 Neovide 特性检测
+if exists("g:neovide")
+" ----------------------------------
+" 图形核心配置
+" ----------------------------------
+let g:neovide_cursor_trail_size = 0.8          " 光标拖尾长度（0-1）
+let g:neovide_floating_blur = 1                " 浮动窗口模糊效果
+
+" ----------------------------------
+" 渲染性能优化
+" ----------------------------------
+let g:neovide_fullscreen = v:true             " 启动时不自动全屏
+let g:neovide_multigrid = v:true               " 启用多网格渲染（提升性能）
+let g:neovide_refresh_rate = 144               " 刷新率匹配显示器
+
+" ----------------------------------
+" 视觉效果增强
+" ----------------------------------
+let g:neovide_underline_automatic_scaling = v:true  " 下划线自动缩放
+"let g:neovide_cursor_vfx_mode = "railgun"           " 粒子特效（可选：wireframe/torpedo/railgun/pixiedust）
+
+" ----------------------------------
+" 字体与缩放
+" ----------------------------------
+let g:neovide_font_face = "FiraCode Nerd Font"
+let g:neovide_font_size = 10
+let g:neovide_scale_factor = 1               " HiDPI 缩放
+
+" ----------------------------------
+" 高级图形参数
+" ----------------------------------
+let g:neovide_padding_top = 1                 " 窗口顶部留白
+let g:neovide_remember_window_size = v:true    " 记忆窗口尺寸
+
+cnoremap <C-V> <C-R>+
+let g:neovide_font_size = 10
+let g:neovide_scale_factor = 0.9
+set linespace=8
+highlight Search ctermbg=green ctermfg=black guibg=#ffeb3b guifg=#000000
+set cmdheight=0
+let g:neovide_cursor_antialiasing = v:true
+let g:neovide_scroll_animation_length = 0.5
+let g:fzf_colors = {
+	\ 'fg':      ['fg', 'Normal'],
+	\ 'bg':      ['bg', 'Normal'],
+	\ 'hl':      ['fg', 'Comment'],
+	\ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+	\ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+	\ 'hl+':     ['fg', 'Statement'],
+	\ 'info':    ['fg', 'PreProc'],
+	\ 'border':  ['fg', 'Ignore'],
+	\ 'prompt':  ['fg', 'Conditional'],
+	\ 'pointer': ['fg', 'Exception'],
+	\ 'marker':  ['fg', 'Keyword'],
+	\ 'spinner': ['fg', 'Label'],
+	\ 'header':  ['fg', 'Comment'] }
+	endif
