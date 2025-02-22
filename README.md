@@ -16,6 +16,7 @@ I am a linux driver engineer work in a phone maker company, I've been working si
    If you on't understand some of theme, you can access these AI websites for answer: 
    [deepseek](https://chat.deepseek.com/)    |.   [文心一言](https://yiyan.baidu.com/)    |   [kimi](https://kimi.moonshot.cn/)   |.  [蓝心千寻](https://qianxun.vivo.com/#/explore) | [字节豆包](https://www.doubao.com/chat/)   |   [copilot](https://github.com/copilot)   |.  [讯飞星火](https://xinghuo.xfyun.cn/desk) or click 
    
+Look at the video I use vim view code:  https://www.youtube.com/watch?v=BSMBZW8p_Wc
 
 
 
