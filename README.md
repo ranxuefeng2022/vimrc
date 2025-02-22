@@ -43,17 +43,17 @@ bind C-a send-prefix
 ```
 
 Here's some other amazing tools for you!!!
-Rg 
-fzf 
-Leaderf 
-Ranger
-Yazi
-neovim
-neovide
-kitty
-coc.nvim
-fd
-Typora or obsidian
+* Rg 
+* fzf 
+* Leaderf 
+* Ranger
+* Yazi
+* neovim
+* neovide
+* kitty
+* coc.nvim
+* fd
+* Typora or obsidian
 
 
 
