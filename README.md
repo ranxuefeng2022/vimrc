@@ -42,8 +42,19 @@ set -g prefix C-a
 bind C-a send-prefix
 ```
 
-## tmux Breif workflow
-![image](https://github.com/user-attachments/assets/4ef6e2d9-31c1-47f0-ae3e-5ad2ee82e9e2)
+Here's some other amazing tools for you!!!
+Rg 
+fzf 
+Leaderf 
+Ranger
+Yazi
+neovim
+neovide
+kitty
+coc.nvim
+fd
+Typora or obsidian
+
 
 
 ***
