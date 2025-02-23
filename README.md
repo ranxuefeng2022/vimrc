@@ -51,7 +51,7 @@ Here's some other amazing tools for you!!!
 * neovim
 * neovide
 * kitty
-* coc.nvim
+* a bounch of vim plugins like coc.nvim
 * fd
 * Typora or obsidian
 
