@@ -43,6 +43,7 @@ syntax on
 colorscheme molokai
 endif
 
+set history=500
 set notermguicolors
 set t_Co=256
 set mouse=a
@@ -56,6 +57,7 @@ set encoding=utf-8
 set showcmd
 set ruler
 set cursorline
+set so=7
 set showtabline=0
 if has('nvim')
 set cursorlineopt=number
@@ -71,6 +73,7 @@ set noswapfile
 set nowb
 set mousemodel=extend
 set smartcase
+set smarttab
 set signcolumn=yes
 set title
 set tabstop=4
@@ -78,7 +81,6 @@ set shiftwidth=4
 set nowritebackup
 set nobackup
 set noautowrite
-set history=50
 set copyindent
 set ttyfast
 set report=0
@@ -95,6 +97,7 @@ set si "Smart indent
 set nowrap "Wrap lines
 set switchbuf+=useopen
 set switchbuf+=usetab
+set wildmenu
 set wildignore+=.*
 set foldenable
 set foldmethod=manual
@@ -105,6 +108,8 @@ set listchars=tab:›\ ,trail:.,extends:#,nbsp:.
 set dictionary+=~/.vim/words
 set fileencodings=utf-8,gbk,gb18030,gb2312,ucs-bom,cp936,latin1
 set hid
+set backspace=eol,start,indent
+set whichwrap+=<,>,h,l
 if exists("g:neovide")
 set laststatus=0
 else
@@ -363,6 +368,7 @@ nnoremap N Nzz
 nnoremap j jzz
 nnoremap k kzz
 nnoremap w wzz
+nmap <leader>w :w!<cr>
 
 nnoremap <silent><expr> <Space>/ incsearch#go(<SID>config_easyfuzzymotion())
 nnoremap<leader>t :FloatermToggle<CR>
@@ -371,6 +377,8 @@ vnoremap <S-k> :m '<-2<CR>gv=gv
 nnoremap f <C-o>zz
 nnoremap a <C-]>zz
 nnoremap F [[k2wzz
+nnoremap ; :
+vnoremap ; :
 
 nnoremap <leader>s :Rg <C-r><C-w> = <CR>
 vnoremap <leader>s y:Rg <C-r>" = <CR>
@@ -387,6 +395,14 @@ inoremap <F1> 5zh
 inoremap <F2> 5zl
 vnoremap <Leader>dm :call DeleteVisualMatch()<CR>
 
+inoremap $1 ()<esc>i
+inoremap $2 []<esc>i
+inoremap $3 {}<esc>i
+inoremap $4 {<esc>o}<esc>O
+inoremap $q ''<esc>i
+inoremap $e ""<esc>i
+inoremap $l ->
+
 map ce :Rg<cr>
 map cf :NERDTreeFind<cr>
 map cc :TagbarToggle<cr>
@@ -401,6 +417,7 @@ map ct :call GenerateTags()<cr>
 map E <Plug>(expand_region_expand)
 map t :call <SID>execute_command()<CR>
 map 0 ^
+map <leader>cd :cd %:p:h<cr>:pwd<cr>
 
 autocmd BufWritePost * GitGutter
 autocmd InsertLeave * silent! write
