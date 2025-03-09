@@ -316,14 +316,13 @@ vnoremap y "+y
 vnoremap p "+p
 nnoremap p "+p
 vnoremap <Rightmouse> "+y
-nnoremap <Rightmouse> "+P
 else
 vnoremap y "ay
 vnoremap p "ap
 nnoremap p "ap
 vnoremap <Rightmouse> "ay
-nnoremap <Rightmouse> "aP
 endif
+nnoremap <Rightmouse> <Leftmouse>#N
 
 vnoremap <Up> <Nop>
 vnoremap <Down> <Nop>
@@ -493,4 +492,4 @@ let g:fzf_colors = {
 	\ 'marker':  ['fg', 'Keyword'],
 	\ 'spinner': ['fg', 'Label'],
 	\ 'header':  ['fg', 'Comment'] }
-	endif
+endif
