@@ -4,7 +4,7 @@ Plug 'rbgrouleff/bclose.vim'
 Plug 'skywind3000/asyncrun.vim'
 Plug 'Yggdroot/LeaderF'
 if exists("g:neovide")
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+"Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSInstallSync all' }
 Plug 'nvim-treesitter/nvim-treesitter-context'
 endif
@@ -44,6 +44,7 @@ filetype indent off
 syntax on
 if exists("g:neovide")
 colorscheme tokyonight-night
+set foldcolumn=1
 set wrapscan
 else
 colorscheme molokai
@@ -69,7 +70,7 @@ else
 endif
 set incsearch
 set showmatch
-set matchtime=10
+set matchtime=50
 set helplang=cn
 set langmenu=zh_CN.UTF-8
 set noswapfile
@@ -412,6 +413,9 @@ vnoremap<C-c> :w! ~/.vim/cvbuf.c<CR>
 nnoremap<C-v> :r ~/.vim/cvbuf.c<CR>
 endif
 
+" Close all the buffers
+map <leader>ba :bufdo bd<cr>
+
 nnoremap a <C-]>zz
 nnoremap # #N
 if !exists("g:neovide")
@@ -459,6 +463,13 @@ inoremap $q ''<esc>i
 inoremap $e ""<esc>i
 inoremap $l ->
 
+
+vnoremap $1 <esc>`>a)<esc>`<i(<esc>
+vnoremap $2 <esc>`>a]<esc>`<i[<esc>
+vnoremap $3 <esc>`>a}<esc>`<i{<esc>
+vnoremap $e <esc>`>a"<esc>`<i"<esc>
+vnoremap $q <esc>`>a'<esc>`<i'<esc>
+
 nnoremap t :call <SID>execute_command_cd()<CR>
 nnoremap q :call <SID>execute_command()<CR>
 
@@ -503,7 +514,7 @@ hi StatusLineFileName ctermfg=119
 hi CursorLineNr ctermfg=2
 hi StatusLinePath ctermbg=233 ctermfg=2
 hi Search ctermbg=yellow "ctermfg=black
-"hi Visual guibg=#2f4374 "guifg=#ffffff
+"hi Visual guibg=#2f4374 guifg=#ffffff
 
 nnoremap <leader>bd :bufdo bd<cr>
 nnoremap <leader>pp :setlocal paste!<cr>
@@ -557,3 +568,6 @@ inoremap <silent><expr> <CR> pumvisible() ? coc#_select_confirm() : "\<CR>"
 endif "neovide config
 " ======================= NEVIDIA 专属配置 =======================
 
+if filereadable(expand("~/.vim/extra_settings.vim"))
+    source ~/.vim/extra_settings.vim
+endif
