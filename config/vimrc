@@ -75,6 +75,7 @@ set langmenu=zh_CN.UTF-8
 set noswapfile
 set nowb
 set mousemodel=extend
+set sm
 set smartcase
 set smarttab
 set signcolumn=yes
@@ -102,6 +103,7 @@ set switchbuf+=useopen
 set switchbuf+=usetab
 set wildmenu
 set wildignore+=.*
+set mousemodel=popup
 set foldenable
 set foldmethod=manual
 set sessionoptions-=options
@@ -114,6 +116,9 @@ set hid
 set backspace=eol,start,indent
 set whichwrap+=<,>,h,l
 set laststatus=2
+set complete+=k
+inoremap <silent> <C-i> <C-x><C-k>
+set dictionary+=~/.vim/dict/my_dict.txt
 set statusline=%#StatusLinePath#%{getcwd()}/%m%{fugitive#statusline()}/%#StatusLineFileName#%t/%{get(b:,'current_func','')}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -123,7 +128,7 @@ iab xdate <C-r>=strftime("20%y-%m-%d %H:%M:%S")<cr>
 function! UpdateCurrentFunc()
     let lnum = line('.')
     let fname = ''
-    let reserved = ['if', 'else', 'elseif']
+    let reserved = ['if', 'else', 'elseif', 'return']
     for i in reverse(range(1, lnum))
         let line_text = getline(i)
         if line_text =~# '^\s*\(if\|else\>\)'
@@ -377,14 +382,13 @@ if exists("g:neovide")
 vnoremap y "+y
 vnoremap p "+p
 nnoremap p "+p
-vnoremap <Rightmouse> "+y
 map yy Ey
 else
 vnoremap y "ay
 vnoremap p "ap
 nnoremap p "ap
-vnoremap <Rightmouse> "aP
 endif
+vnoremap <Rightmouse> "+y
 nnoremap <Rightmouse> <Leftmouse>#N
 
 inoremap <C-h> <left>
@@ -401,8 +405,8 @@ nnoremap <S-j> :resize +3<CR>
 nnoremap <S-k> :resize -3<CR>
 nnoremap <silent> <leader>no :call Togglefunc1()<CR>
 if exists("g:neovide")
-vnoremap<C-c> :w! ~/c/.vim/cvbuf.c<CR>
-nnoremap<C-v> :r ~/c/.vim/cvbuf.c<CR>
+vnoremap<C-c> :w! ~/.vim/cvbuf.c<CR>
+nnoremap<C-v> :r ~/.vim/cvbuf.c<CR>
 else
 vnoremap<C-c> :w! ~/.vim/cvbuf.c<CR>
 nnoremap<C-v> :r ~/.vim/cvbuf.c<CR>
@@ -443,6 +447,8 @@ vnoremap <F1> 15zh
 vnoremap <F2> 15zl
 inoremap <F1> 15zh
 inoremap <F2> 15zl
+nnoremap <S-ScrollWheelRight> 15zl
+nnoremap <S-ScrollWheelLeft> 15zh
 vnoremap <Leader>dm :call DeleteVisualMatch()<CR>
 
 inoremap $1 ()<esc>i
@@ -507,15 +513,14 @@ if exists("g:neovide")
 set linespace=8
 set cmdheight=0
 cnoremap <C-V> <C-R>+
-let g:neovide_cursor_trail_size = 0.4          " 光标拖尾长度（0-1）
+let g:neovide_cursor_trail_size = 0.7          " 光标拖尾长度（0-1）
 let g:neovide_floating_blur = 1                " 浮动窗口模糊效果
 let g:neovide_multigrid = v:true               " 启用多网格渲染（提升性能）
-let g:neovide_refresh_rate = 60
+"let g:neovide_refresh_rate = 60
 let g:neovide_underline_automatic_scaling = v:true  " 下划线自动缩放
-let g:neovide_transparency = 0.9
 let g:neovide_fullscreen = v:true
 
-let g:neovide_cursor_animation_length = 0.13
+let g:neovide_cursor_animation_length = 0.1
 "let g:neovide_cursor_vfx_mode = "railgun"           " 粒子特效（可选：wireframe/torpedo/railgun/pixiedust）
 let g:neovide_font_face = "FiraCode Nerd Font"
 let g:neovide_font_size = 10
@@ -526,7 +531,7 @@ let g:neovide_scale_factor = 1.1
 let g:neovide_cursor_antialiasing = v:true
 let g:neovide_scroll_animation_length = 0.6
 
-let g:neovide_cursor_trail_length=0.5
+let g:neovide_cursor_trail_length= 0
 let g:neovide_cursor_vfx_particle_speed=10.0
 let g:fzf_colors = {
 	\ 'fg':      ['fg', 'Normal'],
