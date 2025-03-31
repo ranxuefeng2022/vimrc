@@ -42,14 +42,15 @@ call plug#end()
 
 filetype indent off
 syntax on
+
 if exists("g:neovide")
-colorscheme tokyonight-night
-set foldcolumn=1
-set wrapscan
+	colorscheme tokyonight-night
 else
-colorscheme molokai
-set nowrapscan
+	colorscheme molokai
 endif
+
+set foldcolumn=0
+set wrapscan
 set history=500
 set notermguicolors
 set t_Co=256
@@ -64,10 +65,11 @@ set showcmd
 set ruler
 set cursorline
 set showtabline=0
+
 if has('nvim')
-set cursorlineopt=number
-else
+	set cursorlineopt=number
 endif
+
 set incsearch
 set showmatch
 set matchtime=50
@@ -92,7 +94,7 @@ set report=0
 set synmaxcol=1000
 set autoread
 set foldcolumn=0
-set lazyredraw
+"set lazyredraw
 set lbr
 set tw=500
 set ai "Auto indent
@@ -230,7 +232,7 @@ endfunction
 "=====================================================begin func====================================
 function! GenerateTags()
 if exists("g:neovide")
-	execute 'AsyncRun ctags -R drivers/* include/*'
+	execute 'AsyncRun ctags -R --exclude="linux-master*"'
 else
 	call system("mkdir tags")
 	execute 'silent AsyncRun -mode=0 bash ~/.vim/tags.sh'
@@ -389,7 +391,7 @@ vnoremap y "ay
 vnoremap p "ap
 nnoremap p "ap
 endif
-vnoremap <Rightmouse> "+y
+vnoremap <Rightmouse> "ay
 nnoremap <Rightmouse> <Leftmouse>#N
 
 inoremap <C-h> <left>
@@ -510,11 +512,10 @@ hi TabLineFill  ctermfg=233
 hi ModeMsg ctermbg=233 ctermfg=2
 hi MoreMsg ctermbg=233 ctermfg=2
 hi Question ctermbg=233 ctermfg=2
-hi StatusLineFileName ctermfg=119
 hi CursorLineNr ctermfg=2
-hi StatusLinePath ctermbg=233 ctermfg=2
-hi Search ctermbg=yellow "ctermfg=black
-"hi Visual guibg=#2f4374 guifg=#ffffff
+
+hi Search ctermbg=white ctermfg=black
+hi Visual ctermbg=235 ctermfg=none
 
 nnoremap <leader>bd :bufdo bd<cr>
 nnoremap <leader>pp :setlocal paste!<cr>
@@ -567,7 +568,3 @@ inoremap <silent><expr> <CR> pumvisible() ? coc#_select_confirm() : "\<CR>"
 """""""""""""""""""""""""""""""COC.NVIM"""""""""""""""""""""""""""""""""""
 endif "neovide config
 " ======================= NEVIDIA 专属配置 =======================
-
-if filereadable(expand("~/.vim/extra_settings.vim"))
-    source ~/.vim/extra_settings.vim
-endif
