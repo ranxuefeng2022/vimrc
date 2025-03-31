@@ -349,20 +349,9 @@ endif
 cabbrev rg Rg
 cabbre git Git
 
-if exists("g:neovide")
 nnoremap <leader><leader> :BTags<CR>
-else
-nnoremap <leader><leader> :LeaderfBufTag<CR>
-endif
-
-nnoremap <leader>l :LeaderfFunction<CR>
-nnoremap <leader>L :BTags<CR>
-
 nnoremap <leader>f :Files<CR>
-nnoremap <leader>F :LeaderfFile<CR>
-
-nnoremap <leader>R :Buffers<CR>
-nnoremap <leader>r :LeaderfBuffer<CR>
+nnoremap <leader>r :Buffers<CR>
 
 nnoremap <C-h> :tabprevious<CR>
 nnoremap <C-l> :tabnext<CR>
