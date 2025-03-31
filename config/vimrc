@@ -506,6 +506,9 @@ hi CursorLineNr ctermfg=2
 hi Search ctermbg=white ctermfg=black
 hi Visual ctermbg=235 ctermfg=none
 
+hi StatusLinePath ctermbg=2 ctermfg=233
+hi StatusLineFileName ctermfg=233
+
 nnoremap <leader>bd :bufdo bd<cr>
 nnoremap <leader>pp :setlocal paste!<cr>
 
