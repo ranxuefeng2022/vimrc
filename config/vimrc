@@ -2,13 +2,35 @@ set runtimepath^=~/.vim
 call plug#begin('~/.vim/plugged')
 Plug 'rbgrouleff/bclose.vim'
 Plug 'skywind3000/asyncrun.vim'
-Plug 'Yggdroot/LeaderF'
-if exists("g:neovide")
-"Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
+Plug 'rose-pine/neovim'
+Plug 'haya14busa/incsearch.vim'
+Plug 'haya14busa/incsearch-easymotion.vim'
+Plug 'haya14busa/incsearch-fuzzy.vim'
+Plug 'ojroques/vim-oscyank', {'branch': 'main'}
+Plug 'rebelot/kanagawa.nvim'
+Plug 'catppuccin/nvim'
+Plug 'ibhagwan/fzf-lua'
+Plug 'nvim-tree/nvim-web-devicons'
+
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+Plug 'nvim-telescope/telescope.nvim'
+
+Plug 'neoclide/coc.nvim', {'branch': 'release'}  " LSP框架 [citation](1)
+Plug 'neoclide/coc-snippets'                    " 片段引擎
+Plug 'honza/vim-snippets'                       " 通用片段库
+
+Plug 'SirVer/ultisnips'         " 片段引擎
+
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSInstallSync all' }
 Plug 'nvim-treesitter/nvim-treesitter-context'
-endif
+Plug 'nvim-tree/nvim-tree.lua'
+Plug 'nvim-lua/plenary.nvim'
+
 Plug 'folke/tokyonight.nvim'
+Plug 'karb94/neoscroll.nvim'
 
 Plug 'vim-scripts/taglist.vim'
 Plug 'tomasr/molokai'
@@ -42,34 +64,25 @@ call plug#end()
 
 filetype indent off
 syntax on
-
-if exists("g:neovide")
-	colorscheme tokyonight-night
-else
-	colorscheme molokai
-endif
-
+colorscheme kanagawa
+set cmdheight=1
 set foldcolumn=0
-set wrapscan
+set nowrapscan
 set history=500
-set notermguicolors
 set t_Co=256
 set mouse=a
 set hlsearch
 set cindent
 set linebreak
 set nocompatible
-set sidescroll=5
+"set sidescroll=5
 set encoding=utf-8
+set fileencoding=utf-8
 set showcmd
 set ruler
-set cursorline
+set nocursorline
 set showtabline=0
-
-if has('nvim')
-	set cursorlineopt=number
-endif
-
+set nomore
 set incsearch
 set showmatch
 set matchtime=50
@@ -81,7 +94,7 @@ set mousemodel=extend
 set sm
 set smartcase
 set smarttab
-set signcolumn=yes
+set signcolumn=no
 set title
 set tabstop=4
 set shiftwidth=4
@@ -93,41 +106,53 @@ set ttyfast
 set report=0
 set synmaxcol=1000
 set autoread
-set foldcolumn=0
-"set lazyredraw
+set lazyredraw
 set lbr
 set tw=500
 set ai "Auto indent
-set nu
-set relativenumber
+"set nu
+"set relativenumber
 set si "Smart indent
 set nowrap "Wrap lines
 set switchbuf+=useopen
 set switchbuf+=usetab
 set wildmenu
 set wildignore+=.*
-set mousemodel=popup
 set foldenable
 set foldmethod=manual
 set sessionoptions-=options
 set completeopt=longest,menu
 set list
 set listchars=tab:›\ ,trail:.,extends:#,nbsp:.
-set dictionary+=~/.vim/words
 set fileencodings=utf-8,gbk,gb18030,gb2312,ucs-bom,cp936,latin1
 set hid
 set backspace=eol,start,indent
 set whichwrap+=<,>,h,l
-set laststatus=2
+set laststatus=0
 set complete+=k
 inoremap <silent> <C-i> <C-x><C-k>
+set dictionary+=~/.vim/words
 set dictionary+=~/.vim/dict/my_dict.txt
-set statusline=%#StatusLinePath#%{getcwd()}/%m%{fugitive#statusline()}/%#StatusLineFileName#%t/%{get(b:,'current_func','')}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 iab xdate <C-r>=strftime("20%y-%m-%d %H:%M:%S")<cr>
+set statusline=%#StatusLineFileName#>>>[%l][%t]%#StatusFunction#[%{get(b:,'current_func','')}]%#GitColor#%{fugitive#statusline()}%#StatusLinePath#[%{getcwd()}]<<<
 
 "=====================================================begin func====================================
+
+function! SetupCustomStatusLine()
+  " 定义高亮组（添加唯一前缀避免冲突）
+  execute "hi StatusLinePath ctermfg=233 ctermbg=104"
+  execute "hi GitColor ctermfg=233 ctermbg=46"
+  execute "hi StatusLineFileName ctermfg=233 ctermbg=190"
+  execute "hi StatusFunction ctermfg=233 ctermbg=177"
+
+  execute "hi Search ctermbg=white ctermfg=black"
+  execute "hi Visual ctermbg=235 ctermfg=none"
+
+  set statusline=%#StatusLineFileName#>>>[%l][%t]%#StatusFunction#[%{get(b:,'current_func','')}]%#GitColor#%{fugitive#statusline()}%#StatusLinePath#[%{getcwd()}]<<<
+endfunction
+
 function! UpdateCurrentFunc()
     let lnum = line('.')
     let fname = ''
@@ -146,6 +171,11 @@ function! UpdateCurrentFunc()
         endif
     endfor
     let b:current_func = fname
+
+	if winnr('$') > 1
+	else
+	execute "resize +3"
+	endif
 endfunction
 autocmd CursorMoved,CursorMovedI * call UpdateCurrentFunc()
 "=====================================================end func====================================
@@ -213,7 +243,6 @@ command! -range -nargs=1 HighlightWithColorCode call HighlightWithColorCode(<f-a
 function! LoadTags()
 if exists("g:neovide")
 	execute "set tags=tags"
-	execute "set tags+=linux-master-tags"
 else
 	call system("mv tags/* .")
 	let tags = ""
@@ -226,6 +255,7 @@ else
 	let tags = substitute(tags, ',$', '', '')
 	execute "set tags+=" . tags
 endif
+	execute "set tags+=linux-master-tags"
 endfunction
 "=====================================================end func====================================
 
@@ -242,8 +272,8 @@ endfunction
 "=====================================================end func====================================
 
 "=====================================================begin func====================================
-function! Togglefunc1()
-  execute g:param1 ? "set nu relativenumber list" : "set nonu norelativenumber nolist"
+function! Togglefunc2()
+  execute g:param1 ? "set laststatus=0" : "set laststatus=2"
   let g:param1 = !g:param1
 endfunction
 "=====================================================end func====================================
@@ -267,15 +297,43 @@ endfunction
 "=====================================================end func====================================
 
 "=====================================================begin func====================================
+function! s:execute_command_cd()
+ let g:command_list = [
+  \ ':cd ~/codecenter/vimcode/2362/kernel/',
+  \ ':cd ~/codecenter/vimcode/2362/lk/',
+  \ ':cd ~/codecenter/vimcode/2362/pl/',
+  \ ':cd ~/codecenter/vimcode/2406/kernel/',
+  \ ':cd ~/codecenter/vimcode/2406/lk/',
+  \ ':cd ~/codecenter/vimcode/2406/pl/',
+  \ ':cd ~/codecenter/vimcode/2417/kernel/',
+  \ ':cd ~/codecenter/vimcode/2417/lk/',
+  \ ':cd ~/codecenter/vimcode/2417/pl/',
+  \ ':cd ~/codecenter/vimcode/2415/kernel/',
+  \ ':cd ~/codecenter/vimcode/2415/lk/',
+  \ ':cd ~/codecenter/vimcode/2415/pl/',
+  \ ':cd ~/codecenter/vimcode/2437/kernel/',
+  \ ':cd ~/codecenter/vimcode/2437/lk/',
+  \ ':cd ~/codecenter/vimcode/2437/pl/',
+  \ ':cd ~/codecenter/v/common/',
+  \ ]
+ call fzf#run(fzf#wrap({
+  \ 'source': g:command_list,
+  \ 'sink': function('s:execute_selected_command')
+  \ }))
+endfunction
+
 function! s:execute_command()
  let g:command_list = [
+  \ ':FzfLua blines',
   \ ':BLines',
   \ ':Git blame',
-  \ ':LeaderfLine',
   \ ':Lines',
   \ ':BCommits',
   \ ':Commits',
-  \ ':Rg',
+  \ ':set scrollbind',
+  \ ':colorscheme molokai | set notermguicolors | call SetupCustomStatusLine()',
+  \ ':colorscheme kanagawa | set termguicolors | call SetupCustomStatusLine()',
+  \ ':colorscheme tokyonight-night | set termguicolors | call SetupCustomStatusLine()',
   \ ]
  call fzf#run(fzf#wrap({
   \ 'source': g:command_list,
@@ -294,6 +352,7 @@ let g:fzf_vim = {}
 let g:fzf_follow_links = 1
 let g:fzf_vim_dir = expand('%:p:h')
 let $FZF_DEFAULT_OPTS='--height 100% --layout=reverse'
+let $FZF_DEFAULT_COMMAND = 'fd --type f --type l --hidden --follow --exclude .git'
 let g:fzf_buffers_jump = 1
 let g:fzf_action = {
   \ 'ctrl-x': 'split',
@@ -308,11 +367,20 @@ let g:fzf_layout = {
 \ }
 
 let mapleader = " "
-let g:Lf_FollowLinks = 1
-let NERDTreeOpenOnStartup=0
-let NERDTreeWinPos="left"
+let g:Lf_FollowLinks = 1  " 启用跟随符号链接
+let g:Lf_ScanSymLink = 1  " 扫描符号链接目录
+" 设置搜索深度（包含符号链接）
+let g:Lf_MaxDepth = 30  " 最大搜索深度
+let g:Lf_UseCache = 1   " 使用缓存提高性能
+let g:Lf_UseMemoryCache = 1  " 使用内存缓存
+" 自定义 rg 命令包含符号链接
+let g:Lf_DefaultExternalTool = "rg"
+
 let g:param1= 0
 let g:initial_directory_set = 0
+
+let NERDTreeOpenOnStartup=0
+let NERDTreeWinPos="left"
 
 let g:tagbar_position = 'left'
 let Tlist_WinWidth = 50
@@ -330,39 +398,48 @@ let g:move_key_modifier_visualmode = 'S'
 let loaded_matchparen=1
 let g:ranger_map_keys = 0
 
-let g:floaterm_width = 0.99  " 宽度为屏幕的 80%
-let g:floaterm_height = 0.99 " 高度为屏幕的 60%
+let g:floaterm_width = 900  " 宽度为屏幕的 80%
+let g:floaterm_height = 35 " 高度为屏幕的 60%
+"let g:floaterm_height = 40 " 高度为屏幕的 60%
 let g:floaterm_autoinsert = 1
 let g:floaterm_autohide = 1
 let g:floaterm_autoclose = 2
 let current_file_dir = expand('%:p:h')
 let current_working_dir = getcwd()
 let g:ranger_replace_netrw = 1
+let g:osc52_trim_newline = 1
 
-if exists("g:neovide")
-let g:python3_host_prog = '~/venv/bin/python3'
-else
-"let g:python3_host_prog = '/opt6/ranxuefeng/.venv/bin/python3'
-let g:python3_host_prog = '~/venv/bin/python3'
-endif
+let g:python3_host_prog = '/usr/bin/python3'
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-j>"
 
 cabbrev rg Rg
 cabbre git Git
 
-nnoremap <leader><leader> :BTags<CR>
+if 0
 nnoremap <leader>f :Files<CR>
 nnoremap <leader>r :Buffers<CR>
-
-nnoremap <C-h> :tabprevious<CR>
-nnoremap <C-l> :tabnext<CR>
-vnoremap <C-h> :tabprevious<CR>
-vnoremap <C-l> :tabnext<CR>
-
-nnoremap <C-@> :
-nnoremap <C-w> <C-w>w
-if !exists("g:neovide")
-nnoremap u :u<cr>:w<cr>
+else
+"nnoremap <leader>f :LeaderfFile<CR>
+"nnoremap <leader><leader> :LeaderfBufTag<CR>
+nnoremap <leader>f :Files<CR>
+nnoremap <leader><leader> :BTags<CR>
+nnoremap <leader>r :LeaderfBuffer<CR>
 endif
+
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+
+inoremap <A-h> <left>
+inoremap <A-j> <down>
+inoremap <A-k> <up>
+inoremap <A-l> <right>
+
+map u <Nop>
+nnoremap u :u<cr>:w<cr>
+
 vnoremap < <gv
 vnoremap > >gv
 vnoremap $ $h
@@ -370,23 +447,24 @@ vnoremap $ $h
 nnoremap Z ZZ
 inoremap jj <Esc>
 
-if exists("g:neovide")
-vnoremap y "+y
-vnoremap p "+p
-nnoremap p "+p
-map yy Ey
-else
 vnoremap y "ay
 vnoremap p "ap
 nnoremap p "ap
-endif
-vnoremap <Rightmouse> "ay
-nnoremap <Rightmouse> <Leftmouse>#N
 
-inoremap <C-h> <left>
-inoremap <C-j> <down>
-inoremap <C-k> <up>
-inoremap <C-l> <right>
+if exists("g:neovide")
+vnoremap r "+y
+cnoremap <S-Space> <C-r>+
+inoremap <S-Space> <C-r>+
+map <S-Leftmouse> <Nop>
+endif
+
+" Bash like keys for the command line
+cnoremap <C-A>      <Home>
+cnoremap <C-E>      <End>
+cnoremap <C-K>      <C-U>
+
+map <Rightmouse>  <Leftmouse>E#
+nnoremap # #N
 
 nnoremap <C-Space> :
 inoremap <C-Space> <C-n>
@@ -395,10 +473,12 @@ nnoremap <S-h> :vertical resize -3<CR>
 nnoremap <S-l> :vertical resize +3<CR>
 nnoremap <S-j> :resize +3<CR>
 nnoremap <S-k> :resize -3<CR>
-nnoremap <silent> <leader>no :call Togglefunc1()<CR>
+
+nnoremap <silent> <leader>e :call Togglefunc2()<CR>
+
 if exists("g:neovide")
-vnoremap<C-c> :w! ~/.vim/cvbuf.c<CR>
-nnoremap<C-v> :r ~/.vim/cvbuf.c<CR>
+vnoremap<C-c> :w! ~/c/.vim/cvbuf.c<CR>
+nnoremap<C-v> :r ~/c/.vim/cvbuf.c<CR>
 else
 vnoremap<C-c> :w! ~/.vim/cvbuf.c<CR>
 nnoremap<C-v> :r ~/.vim/cvbuf.c<CR>
@@ -407,29 +487,42 @@ endif
 " Close all the buffers
 map <leader>ba :bufdo bd<cr>
 
-nnoremap a <C-]>zz
-nnoremap # #N
-
-nmap <leader>w :w!<cr>
-
 nnoremap <silent><expr> <Space>/ incsearch#go(<SID>config_easyfuzzymotion())
-nmap s <Plug>(easymotion-overwin-f2)
+
+map s <Nop>
+nnoremap s <Plug>(easymotion-overwin-f2)
+
+map  <Leader>o <Plug>(easymotion-bd-f)
+nmap <Leader>o <Plug>(easymotion-overwin-f)
+
+nnoremap <Leader>l <Plug>(easymotion-lineforward)
+nnoremap <Leader>j <Plug>(easymotion-j)
+nnoremap <Leader>k <Plug>(easymotion-k)
+nnoremap <Leader>i <Plug>(easymotion-linebackward)
+
+let g:EasyMotion_startofline = 0 " keep cursor column when JK motion
+
 nnoremap<leader>t :FloatermToggle<CR>
 vnoremap <S-j> :m '>+1<CR>gv=gv
 vnoremap <S-k> :m '<-2<CR>gv=gv
+
+map f <Nop>
 nnoremap f <C-o>zz
-nnoremap a <C-]>zz
 nnoremap F [[k2wzz
 nnoremap ; :
 vnoremap ; :
+nnoremap a <Nop>
+vnoremap a <Nop>
+nnoremap a <C-]>zz
 
 nnoremap <leader>s :Rg <C-r><C-w> = <CR>
 vnoremap <leader>s y:Rg <C-r>" = <CR>
 vnoremap R y:Rg <C-r>"<CR>
 nnoremap R :Rg <C-r><C-w><CR>
 
-vnoremap . :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
-vnoremap <silent> # y/<C-r>"<CR>Nzz
+vnoremap , :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
+vnoremap <silent> # y/<C-r>"<CR>N
+
 nnoremap <F1> 15zh
 nnoremap <F2> 15zl
 vnoremap <F1> 15zh
@@ -438,25 +531,33 @@ inoremap <F1> 15zh
 inoremap <F2> 15zl
 nnoremap <S-ScrollWheelRight> 15zl
 nnoremap <S-ScrollWheelLeft> 15zh
+
+nnoremap z z
+vnoremap z z
+vnoremap zf zfzf
+
 vnoremap <Leader>dm :call DeleteVisualMatch()<CR>
+if !exists("g:neovide")
+vnoremap r <Plug>OSCYankVisual
+endif
 
-inoremap $1 ()<esc>i
-inoremap $2 []<esc>i
-inoremap $3 {}<esc>i
-inoremap $4 {<esc>o}<esc>O
-inoremap $q ''<esc>i
-inoremap $e ""<esc>i
-inoremap $l ->
+inoremap El ->
+inoremap E1 ()<esc>i
+inoremap E2 []<esc>i
+inoremap E3 {}<esc>i
+inoremap E4 {<esc>o}<esc>O
 
-
-vnoremap $1 <esc>`>a)<esc>`<i(<esc>
-vnoremap $2 <esc>`>a]<esc>`<i[<esc>
-vnoremap $3 <esc>`>a}<esc>`<i{<esc>
-vnoremap $e <esc>`>a"<esc>`<i"<esc>
-vnoremap $q <esc>`>a'<esc>`<i'<esc>
+vnoremap E1 <esc>`>a)<esc>`<i(<esc>
+vnoremap E2 <esc>`>a]<esc>`<i[<esc>
+vnoremap E3 <esc>`>a}<esc>`<i{<esc>
+vnoremap E4 <esc>`>a"<esc>`<i"<esc>
+vnoremap E5 <esc>`>a'<esc>`<i'<esc>
 
 nnoremap t :call <SID>execute_command_cd()<CR>
 nnoremap q :call <SID>execute_command()<CR>
+
+nnoremap c <Nop>
+vnoremap c <Nop>
 
 map ce :Rg<cr>
 map cf :NERDTreeFind<cr>
@@ -466,8 +567,6 @@ map cv :vsp<cr>
 map ca :Ranger<cr>
 map cq :copen 20<cr>
 map cL :call system('rm -rf *2025_Will_Rich_* tags \n')<cr>
-map cl :colorscheme default<bar>syntax off<cr>
-map co :colorscheme molokai<bar>syntax on<cr>
 map ct :call GenerateTags()<cr>
 map E <Plug>(expand_region_expand)
 map 0 ^
@@ -480,13 +579,12 @@ autocmd BufRead,BufNewFile * source ~/.vim/plugged/c.vim/ftplugin/c.vim
 autocmd BufRead,BufNewFile * source ~/.vim/plugged/c.vim/ftplugin/make.vim
 autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 autocmd InsertLeave * if pumvisible() == 0|pclose|endif
-autocmd vimEnter * execute 'cd' expand('%:p:h')
 autocmd VimLeave * call system("mv *_2025_Will_Rich_* tags/")
 autocmd BufRead * silent! call LoadTags()
 autocmd Syntax * source ~/.vim/plugged/c.vim/ftplugin/c.vim
 autocmd User FloatermExit :FloatermNew --autoclose=0 exit 0
-autocmd BufRead,BufNewFile *  hi clear SignColumn
-autocmd BufRead,BufNewFile *  hi clear LineNr
+"autocmd BufRead,BufNewFile *  hi clear SignColumn
+"autocmd BufRead,BufNewFile *  hi clear LineNr
 autocmd BufEnter * if !g:initial_directory_set | silent! lcd %:p:h | let g:initial_directory_set = 1 | endif
 
 hi TabLine      ctermfg=2 ctermbg=233
@@ -500,37 +598,39 @@ hi CursorLineNr ctermfg=2
 hi Search ctermbg=white ctermfg=black
 hi Visual ctermbg=235 ctermfg=none
 
-hi StatusLinePath ctermbg=2 ctermfg=233
-hi StatusLineFileName ctermfg=233
-
-nnoremap <leader>bd :bufdo bd<cr>
 nnoremap <leader>pp :setlocal paste!<cr>
-
 " ======================= NEVIDIA 专属配置 =======================
 if exists("g:neovide")
 set linespace=8
-set cmdheight=0
-cnoremap <C-V> <C-R>+
-let g:neovide_cursor_trail_size = 0.7          " 光标拖尾长度（0-1）
+let g:neovide_cursor_trail_size = 0.5          " 光标拖尾长度（0-1）
 let g:neovide_floating_blur = 1                " 浮动窗口模糊效果
 let g:neovide_multigrid = v:true               " 启用多网格渲染（提升性能）
-"let g:neovide_refresh_rate = 60
 let g:neovide_underline_automatic_scaling = v:true  " 下划线自动缩放
 let g:neovide_fullscreen = v:true
+set relativenumber
 
-let g:neovide_cursor_animation_length = 0.1
-"let g:neovide_cursor_vfx_mode = "railgun"           " 粒子特效（可选：wireframe/torpedo/railgun/pixiedust）
+let g:neovide_cursor_animation_length = 0.1  "-- 动画时长
+let g:neovide_cursor_trail_size = 0.5         "-- 轨迹大小
+let g:neovide_cursor_antialiasing = v:true      "-- 抗锯齿
+
+let g:neovide_cursor_vfx_particle_lifetime = 0.3        "-- 粒子存活时间
+let g:neovide_cursor_vfx_particle_density = 5.0       "-- 粒子密度
+let g:neovide_cursor_vfx_particle_speed = 10.0        "-- 粒子速度
+let g:neovide_cursor_vfx_particle_phase = 1.5         "-- 粒子相位
+let g:neovide_cursor_vfx_particle_curl = 1.0          "-- 粒子旋转
+"let g:neovide_cursor_vfx_mode = "railgun"
+let g:neovide_cursor_vfx_opacity = 100.0
+
 let g:neovide_font_face = "FiraCode Nerd Font"
 let g:neovide_font_size = 10
 let g:neovide_padding_top = 1                 " 窗口顶部留白
 let g:neovide_remember_window_size = v:true    " 记忆窗口尺寸
 let g:neovide_power_save_mode = v:true
-let g:neovide_scale_factor = 1.1
-let g:neovide_cursor_antialiasing = v:true
+let g:neovide_scale_factor = 0.84
+let g:neovide_opacity = 1
 let g:neovide_scroll_animation_length = 0.6
 
-let g:neovide_cursor_trail_length= 0
-let g:neovide_cursor_vfx_particle_speed=10.0
+let g:neovide_cursor_trail_length= 0.2
 let g:fzf_colors = {
 	\ 'fg':      ['fg', 'Normal'],
 	\ 'bg':      ['bg', 'Normal'],
@@ -545,12 +645,33 @@ let g:fzf_colors = {
 	\ 'marker':  ['fg', 'Keyword'],
 	\ 'spinner': ['fg', 'Label'],
 	\ 'header':  ['fg', 'Comment'] }
+
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg --threads 5  -L --column --line-number --no-heading --color=always --smart-case  '.shellescape(<q-args>), 1,
+  \   fzf#vim#with_preview(), <bang>0)
+
+endif "neovide config
+" ======================= NEVIDIA 专属配置 =======================
+
 """""""""""""""""""""""""""""""COC.NVIM"""""""""""""""""""""""""""""""""""
+if !exists("g:neovide")
+let g:coc_node_path='~/.user/node-v24.0.1-linux-x64/bin/node'
+endif
 inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"
 inoremap <silent><expr> <C-@> coc#refresh()
 inoremap <silent><expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <silent><expr> <CR> pumvisible() ? coc#_select_confirm() : "\<CR>"
+inoremap <silent><expr> <C-j> coc#pum#visible() ? coc#pum#next(1) : "\<C-j>"
+inoremap <silent><expr> <C-k> coc#pum#visible() ? coc#pum#prev(1) : "\<C-k>"
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<CR>"
+" 展开或跳转到下一个占位符
+imap <silent><expr> <Tab> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
+" 强制触发片段展开（即使补全菜单未打开）
+
+" 跳转片段占位符
+let g:coc_snippet_next = '<C-j>'
+let g:coc_snippet_prev = '<C-k>'
 """""""""""""""""""""""""""""""COC.NVIM"""""""""""""""""""""""""""""""""""
-endif "neovide config
-" ======================= NEVIDIA 专属配置 =======================
+
