@@ -409,13 +409,7 @@ map <leader>ba :bufdo bd<cr>
 
 nnoremap a <C-]>zz
 nnoremap # #N
-if !exists("g:neovide")
-nnoremap n nzz
-nnoremap N Nzz
-nnoremap j jzz
-nnoremap k kzz
-nnoremap w wzz
-endif
+
 nmap <leader>w :w!<cr>
 
 nnoremap <silent><expr> <Space>/ incsearch#go(<SID>config_easyfuzzymotion())
