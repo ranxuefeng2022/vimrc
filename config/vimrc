@@ -299,21 +299,6 @@ endfunction
 "=====================================================begin func====================================
 function! s:execute_command_cd()
  let g:command_list = [
-  \ ':cd ~/codecenter/vimcode/2362/kernel/',
-  \ ':cd ~/codecenter/vimcode/2362/lk/',
-  \ ':cd ~/codecenter/vimcode/2362/pl/',
-  \ ':cd ~/codecenter/vimcode/2406/kernel/',
-  \ ':cd ~/codecenter/vimcode/2406/lk/',
-  \ ':cd ~/codecenter/vimcode/2406/pl/',
-  \ ':cd ~/codecenter/vimcode/2417/kernel/',
-  \ ':cd ~/codecenter/vimcode/2417/lk/',
-  \ ':cd ~/codecenter/vimcode/2417/pl/',
-  \ ':cd ~/codecenter/vimcode/2415/kernel/',
-  \ ':cd ~/codecenter/vimcode/2415/lk/',
-  \ ':cd ~/codecenter/vimcode/2415/pl/',
-  \ ':cd ~/codecenter/vimcode/2437/kernel/',
-  \ ':cd ~/codecenter/vimcode/2437/lk/',
-  \ ':cd ~/codecenter/vimcode/2437/pl/',
   \ ':cd ~/codecenter/v/common/',
   \ ]
  call fzf#run(fzf#wrap({
