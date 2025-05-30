@@ -1,40 +1,44 @@
 set runtimepath^=~/.vim
 call plug#begin('~/.vim/plugged')
+Plug 'stevearc/dressing.nvim'
+Plug 'rcarriga/nvim-notify'
+Plug 'folke/noice.nvim'
+Plug 'MunifTanjim/nui.nvim'
+Plug 'petertriho/nvim-scrollbar'
+
+Plug 'phaazon/hop.nvim'
+"Plug 'yetone/avante.nvim', { 'branch': 'main', 'do': 'make' }
+
 Plug 'rbgrouleff/bclose.vim'
 Plug 'skywind3000/asyncrun.vim'
 Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
+
+Plug 'rebelot/kanagawa.nvim'
 Plug 'rose-pine/neovim'
+Plug 'folke/tokyonight.nvim'
+Plug 'tomasr/molokai'
+
 Plug 'haya14busa/incsearch.vim'
 Plug 'haya14busa/incsearch-easymotion.vim'
 Plug 'haya14busa/incsearch-fuzzy.vim'
 Plug 'ojroques/vim-oscyank', {'branch': 'main'}
-Plug 'rebelot/kanagawa.nvim'
 Plug 'catppuccin/nvim'
 Plug 'ibhagwan/fzf-lua'
 Plug 'nvim-tree/nvim-web-devicons'
 
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
-Plug 'nvim-telescope/telescope.nvim'
-
 Plug 'neoclide/coc.nvim', {'branch': 'release'}  " LSP框架 [citation](1)
+
 Plug 'neoclide/coc-snippets'                    " 片段引擎
 Plug 'honza/vim-snippets'                       " 通用片段库
-
 Plug 'SirVer/ultisnips'         " 片段引擎
+
 
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSInstallSync all' }
 Plug 'nvim-treesitter/nvim-treesitter-context'
-Plug 'nvim-tree/nvim-tree.lua'
-Plug 'nvim-lua/plenary.nvim'
-
-Plug 'folke/tokyonight.nvim'
-Plug 'karb94/neoscroll.nvim'
 
 Plug 'vim-scripts/taglist.vim'
-Plug 'tomasr/molokai'
-Plug 'preservim/nerdtree'
 
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
@@ -65,7 +69,7 @@ call plug#end()
 filetype indent off
 syntax on
 colorscheme kanagawa
-set cmdheight=1
+set cmdheight=0
 set foldcolumn=0
 set nowrapscan
 set history=500
@@ -75,7 +79,7 @@ set hlsearch
 set cindent
 set linebreak
 set nocompatible
-"set sidescroll=5
+set signcolumn=yes
 set encoding=utf-8
 set fileencoding=utf-8
 set showcmd
@@ -94,7 +98,6 @@ set mousemodel=extend
 set sm
 set smartcase
 set smarttab
-set signcolumn=no
 set title
 set tabstop=4
 set shiftwidth=4
@@ -106,7 +109,7 @@ set ttyfast
 set report=0
 set synmaxcol=1000
 set autoread
-set lazyredraw
+"set lazyredraw
 set lbr
 set tw=500
 set ai "Auto indent
@@ -119,7 +122,6 @@ set switchbuf+=usetab
 set wildmenu
 set wildignore+=.*
 set foldenable
-set foldmethod=manual
 set sessionoptions-=options
 set completeopt=longest,menu
 set list
@@ -127,30 +129,52 @@ set listchars=tab:›\ ,trail:.,extends:#,nbsp:.
 set fileencodings=utf-8,gbk,gb18030,gb2312,ucs-bom,cp936,latin1
 set hid
 set backspace=eol,start,indent
-set whichwrap+=<,>,h,l
+set whichwrap+=<,>,[,],h,l
+set virtualedit=onemore
+set foldmethod=manual
 set laststatus=0
 set complete+=k
 inoremap <silent> <C-i> <C-x><C-k>
 set dictionary+=~/.vim/words
 set dictionary+=~/.vim/dict/my_dict.txt
-
+set rtp+=~/.user/bin/fzf
+set statusline=%#Color256C#(Ne%{g:mark}Vim)%#MoDe#[%{Mode()}]%#StatusFunction#[%{get(b:,'current_func','')}][%t]%#StatusLineFileName#[%l]%#GitColor#%{fugitive#statusline()}%#StatusLinePath#[%{getcwd()}]
+set statusline+=[%{g:current_time}]
+"⚡🌟⭐🚀🌈🌍🌐
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 iab xdate <C-r>=strftime("20%y-%m-%d %H:%M:%S")<cr>
-set statusline=%#StatusLineFileName#>>>[%l][%t]%#StatusFunction#[%{get(b:,'current_func','')}]%#GitColor#%{fugitive#statusline()}%#StatusLinePath#[%{getcwd()}]<<<
-
 "=====================================================begin func====================================
+let g:current_time = strftime("%m-%d %H:%M:%S")
+let g:mark='🌍'
+let g:param2= 0
+function! SwitchStatuslineColor(timer)
+    execute 'highlight Color256C guibg=' . g:xterm_256_colors[rand() % 255 + 1]
+    execute 'highlight Color256C guifg=' . g:xterm_256_colors[rand() % 255 + 1]
+    let g:param2 = !g:param2
+    execute g:param2 ? "let g:mark='🌍'" : "let g:mark='🌐'"
+    let g:current_time = strftime("%m-%d %H:%M:%S")
+endfunction
 
-function! SetupCustomStatusLine()
-  " 定义高亮组（添加唯一前缀避免冲突）
-  execute "hi StatusLinePath ctermfg=233 ctermbg=104"
-  execute "hi GitColor ctermfg=233 ctermbg=46"
-  execute "hi StatusLineFileName ctermfg=233 ctermbg=190"
-  execute "hi StatusFunction ctermfg=233 ctermbg=177"
-
-  execute "hi Search ctermbg=white ctermfg=black"
-  execute "hi Visual ctermbg=235 ctermfg=none"
-
-  set statusline=%#StatusLineFileName#>>>[%l][%t]%#StatusFunction#[%{get(b:,'current_func','')}]%#GitColor#%{fugitive#statusline()}%#StatusLinePath#[%{getcwd()}]<<<
+" 启动一个每1秒执行一次的定时器
+if has('timers')
+    call timer_start(800, 'SwitchStatuslineColor', {'repeat': -1})
+endif
+"=====================================================end func====================================
+"=====================================================begin func====================================
+function! Mode()
+  let l:mode = mode()
+  if l:mode ==# 'n'
+    hi MoDe guifg=#000000 guibg=#378737
+    return '正常模式'
+  elseif l:mode ==# 'i'
+    hi MoDe guifg=#000000 guibg=#d73737
+    return '插入模式!'
+  elseif l:mode ==# 'v' || l:mode ==# 'V' || l:mode ==# '' || l:mode ==# 's'
+    hi MoDe guifg=#000000 guibg=#ffff5f
+    return '可视模式'
+  else
+    return l:mode
+  endif
 endfunction
 
 function! UpdateCurrentFunc()
@@ -207,54 +231,67 @@ endfunction
 "=====================================================end func====================================
 
 "=====================================================begin func====================================
+" 预定义 XTerm 256 色表（全局变量，避免重复初始化）
+let g:xterm_256_colors = [
+\ "#000000","#800000","#008000","#808000","#000080","#800080","#008080","#c0c0c0", "#808080","#ff0000","#00ff00","#ffff00","#0000ff","#ff00ff","#00ffff","#ffffff",
+\ "#000000","#00005f","#000087","#0000af","#0000d7","#0000ff","#005f00","#005f5f", "#005f87","#005faf","#005fd7","#005fff","#008700","#00875f","#008787","#0087af",
+\ "#0087d7","#0087ff","#00af00","#00af5f","#00af87","#00afaf","#00afd7","#00afff", "#00d700","#00d75f","#00d787","#00d7af","#00d7d7","#00d7ff","#00ff00","#00ff5f",
+\ "#00ff87","#00ffaf","#00ffd7","#00ffff","#5f0000","#5f005f","#5f0087","#5f00af", "#5f00d7","#5f00ff","#5f5f00","#5f5f5f","#5f5f87","#5f5faf","#5f5fd7","#5f5fff",
+\ "#5f8700","#5f875f","#5f8787","#5f87af","#5f87d7","#5f87ff","#5faf00","#5faf5f", "#5faf87","#5fafaf","#5fafd7","#5fafff","#5fd700","#5fd75f","#5fd787","#5fd7af",
+\ "#5fd7d7","#5fd7ff","#5fff00","#5fff5f","#5fff87","#5fffaf","#5fffd7","#5fffff", "#870000","#87005f","#870087","#8700af","#8700d7","#8700ff","#875f00","#875f5f",
+\ "#875f87","#875faf","#875fd7","#875fff","#878700","#87875f","#878787","#8787af", "#8787d7","#8787ff","#87af00","#87af5f","#87af87","#87afaf","#87afd7","#87afff",
+\ "#87d700","#87d75f","#87d787","#87d7af","#87d7d7","#87d7ff","#87ff00","#87ff5f", "#87ff87","#87ffaf","#87ffd7","#87ffff","#af0000","#af005f","#af0087","#af00af",
+\ "#af00d7","#af00ff","#af5f00","#af5f5f","#af5f87","#af5faf","#af5fd7","#af5fff", "#af8700","#af875f","#af8787","#af87af","#af87d7","#af87ff","#afaf00","#afaf5f",
+\ "#afaf87","#afafaf","#afafd7","#afafff","#afd700","#afd75f","#afd787","#afd7af", "#afd7d7","#afd7ff","#afff00","#afff5f","#afff87","#afffaf","#afffd7","#afffff",
+\ "#d70000","#d7005f","#d70087","#d700af","#d700d7","#d700ff","#d75f00","#d75f5f", "#d75f87","#d75faf","#d75fd7","#d75fff","#d78700","#d7875f","#d78787","#d787af",
+\ "#d787d7","#d787ff","#d7af00","#d7af5f","#d7af87","#d7afaf","#d7afd7","#d7afff", "#d7d700","#d7d75f","#d7d787","#d7d7af","#d7d7d7","#d7d7ff","#d7ff00","#d7ff5f",
+\ "#d7ff87","#d7ffaf","#d7ffd7","#d7ffff","#ff0000","#ff005f","#ff0087","#ff00af", "#ff00d7","#ff00ff","#ff5f00","#ff5f5f","#ff5f87","#ff5faf","#ff5fd7","#ff5fff",
+\ "#ff8700","#ff875f","#ff8787","#ff87af","#ff87d7","#ff87ff","#ffaf00","#ffaf5f", "#ffaf87","#ffafaf","#ffafd7","#ffafff","#ffd700","#ffd75f","#ffd787","#ffd7af",
+\ "#ffd7d7","#ffd7ff","#ffff00","#ffff5f","#ffff87","#ffffaf","#ffffd7","#ffffff", "#080808","#121212","#1c1c1c","#262626","#303030","#3a3a3a","#444444","#4e4e4e",
+\ "#585858","#626262","#6c6c6c","#767676","#808080","#8a8a8a","#949494","#9e9e9e", "#a8a8a8","#b2b2b2","#bcbcbc","#c6c6c6","#d0d0d0","#dadada","#e4e4e4","#eeeeee"
+\ ]
 function! HighlightWithColorCode(color_code) range
-	let start_line = a:firstline
-	let end_line = a:lastline
-	let start_col = col("'<")
-	let end_col = col("'>")
-	let selected_text = getline(start_line)[start_col-1 : end_col-1]
+    " 检查颜色代码是否有效
+    if a:color_code < 0 || a:color_code >= len(g:xterm_256_colors)
+        echoerr "Invalid color code:" a:color_code
+        return
+    endif
 
-	if  a:color_code == 999
-		echo "clear all"
-	call clearmatches()
-		return
-	endif
+    " 获取选中文本
+    let start_line = a:firstline
+    let end_line = a:lastline
+    let start_col = col("'<") - 1  " 转换为 0-based
+    let end_col = col("'>") - 1
+    let selected_text = getline(start_line)[start_col : end_col]
 
-	if a:color_code < 0 || a:color_code > 255
-		echo "Invalid color code: " . a:color_code
-		return
-	endif
+    " 定义高亮组
+    let hl_group = 'MyColor' . a:color_code
 
-	let hl_group = 'MyColor' . a:color_code
-	try
-		execute 'highlight ' . hl_group . ' ctermbg=' . a:color_code . ' guibg=' . a:color_code
-	catch /E254/
-		echo "color:" . a:color_code
-	endtry
-
-	call matchadd(hl_group, selected_text)
+    try
+		if has('termguicolors') && &termguicolors
+			execute 'highlight ' . hl_group . ' guibg=' . g:xterm_256_colors[a:color_code]
+		else
+			execute 'highlight ' . hl_group . ' ctermbg=' . a:color_code
+		endif
+        call matchadd(hl_group, selected_text)
+    catch /E254/
+        echo "Highlight group already exists:" hl_group
+    endtry
 endfunction
-"=====================================================end func====================================
 
 command! -range -nargs=1 HighlightWithColorCode call HighlightWithColorCode(<f-args>)
+"=====================================================end func====================================
+
 
 
 "=====================================================begin func====================================
 function! LoadTags()
-if exists("g:neovide")
-	execute "set tags=tags"
-else
 	call system("mv tags/* .")
-	let tags = ""
-	for tagfile in split(glob("tag_2025_Will_Rich_*"), "\n")
-		if stridx(&tags, tagfile) == -1
-			let tags .= tagfile . ","
-		endif
+	let g:tags_list = split(glob("tag*"), "\n")
+	for tag_file in g:tags_list
+		execute "set tags+=" . tag_file
 	endfor
 
-	let tags = substitute(tags, ',$', '', '')
-	execute "set tags+=" . tags
-endif
 	execute "set tags+=linux-master-tags"
 endfunction
 "=====================================================end func====================================
@@ -264,7 +301,8 @@ function! GenerateTags()
 if exists("g:neovide")
 	execute 'AsyncRun ctags -R --exclude="linux-master*"'
 else
-	call system("mkdir tags")
+	call system('rm -rf *2025_Will_Rich* tags files \n')
+	call system("mkdir tags \n")
 	execute 'silent AsyncRun -mode=0 bash ~/.vim/tags.sh'
 endif
 	autocmd User AsyncRunStop silent! call LoadTags()
@@ -274,6 +312,7 @@ endfunction
 "=====================================================begin func====================================
 function! Togglefunc2()
   execute g:param1 ? "set laststatus=0" : "set laststatus=2"
+  execute "hi clear SignColumn | hi clear LineNr"
   let g:param1 = !g:param1
 endfunction
 "=====================================================end func====================================
@@ -309,16 +348,19 @@ endfunction
 
 function! s:execute_command()
  let g:command_list = [
-  \ ':FzfLua blines',
   \ ':BLines',
+  \ ':FzfLua blines',
   \ ':Git blame',
   \ ':Lines',
   \ ':BCommits',
   \ ':Commits',
   \ ':set scrollbind',
-  \ ':colorscheme molokai | set notermguicolors | call SetupCustomStatusLine()',
-  \ ':colorscheme kanagawa | set termguicolors | call SetupCustomStatusLine()',
-  \ ':colorscheme tokyonight-night | set termguicolors | call SetupCustomStatusLine()',
+  \ ':call clearmatches()',
+  \ ':Git reset --hard HEAD^^^^ | Git pull | Git status',
+  \ ':AsyncRun ctags -R *',
+  \ ':colorscheme molokai | set notermguicolors',
+  \ ':colorscheme kanagawa | set termguicolors',
+  \ ':colorscheme tokyonight-night | set termguicolors',
   \ ]
  call fzf#run(fzf#wrap({
   \ 'source': g:command_list,
@@ -364,17 +406,10 @@ let g:Lf_DefaultExternalTool = "rg"
 let g:param1= 0
 let g:initial_directory_set = 0
 
-let NERDTreeOpenOnStartup=0
-let NERDTreeWinPos="left"
-
-let g:tagbar_position = 'left'
-let Tlist_WinWidth = 50
-let Tlist_Use_SingleClick = 1
-let Tlist_Use_Right_Window = 0
-let Tlist_WinWidth = 50
-
+let g:tagbar_position = 'right'
 let g:tagbar_singleclick = 1
 let g:tagbar_autoclose = 0
+let g:tagbar_width = 70
 
 let g:EasyMotion_do_mapping = 0
 let g:EasyMotion_smartcase = 1
@@ -399,23 +434,10 @@ let g:UltiSnipsExpandTrigger="<tab>"
 let g:UltiSnipsJumpForwardTrigger="<c-j>"
 
 cabbrev rg Rg
-cabbre git Git
 
-if 0
-nnoremap <leader>f :Files<CR>
-nnoremap <leader>r :Buffers<CR>
-else
-"nnoremap <leader>f :LeaderfFile<CR>
-"nnoremap <leader><leader> :LeaderfBufTag<CR>
 nnoremap <leader>f :Files<CR>
 nnoremap <leader><leader> :BTags<CR>
 nnoremap <leader>r :LeaderfBuffer<CR>
-endif
-
-nnoremap <C-h> <C-w>h
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
-nnoremap <C-l> <C-w>l
 
 inoremap <A-h> <left>
 inoremap <A-j> <down>
@@ -452,6 +474,8 @@ map <Rightmouse>  <Leftmouse>E#
 nnoremap # #N
 
 nnoremap <C-Space> :
+nnoremap ; :
+vnoremap ; :
 inoremap <C-Space> <C-n>
 
 nnoremap <S-h> :vertical resize -3<CR>
@@ -475,10 +499,9 @@ map <leader>ba :bufdo bd<cr>
 nnoremap <silent><expr> <Space>/ incsearch#go(<SID>config_easyfuzzymotion())
 
 map s <Nop>
-nnoremap s <Plug>(easymotion-overwin-f2)
-
-map  <Leader>o <Plug>(easymotion-bd-f)
-nmap <Leader>o <Plug>(easymotion-overwin-f)
+map S <Nop>
+nnoremap s :HopChar2<cr>
+nnoremap S :HopLineStart<cr>
 
 nnoremap <Leader>l <Plug>(easymotion-lineforward)
 nnoremap <Leader>j <Plug>(easymotion-j)
@@ -494,11 +517,11 @@ vnoremap <S-k> :m '<-2<CR>gv=gv
 map f <Nop>
 nnoremap f <C-o>zz
 nnoremap F [[k2wzz
-nnoremap ; :
-vnoremap ; :
+
 nnoremap a <Nop>
 vnoremap a <Nop>
 nnoremap a <C-]>zz
+nnoremap <Enter> <C-]>zz
 
 nnoremap <leader>s :Rg <C-r><C-w> = <CR>
 vnoremap <leader>s y:Rg <C-r>" = <CR>
@@ -508,22 +531,23 @@ nnoremap R :Rg <C-r><C-w><CR>
 vnoremap , :<C-u>call HighlightWithColorCode(input('Enter color code (0-255): '))<CR>
 vnoremap <silent> # y/<C-r>"<CR>N
 
-nnoremap <F1> 15zh
-nnoremap <F2> 15zl
-vnoremap <F1> 15zh
-vnoremap <F2> 15zl
-inoremap <F1> 15zh
-inoremap <F2> 15zl
-nnoremap <S-ScrollWheelRight> 15zl
-nnoremap <S-ScrollWheelLeft> 15zh
+nnoremap <C-h> 15zh
+nnoremap <C-l> 15zl
+vnoremap <C-h> 15zh
+vnoremap <C-h> 15zh
+inoremap <C-l> 15zl
+inoremap <C-l> 15zl
 
 nnoremap z z
 vnoremap z z
 vnoremap zf zfzf
 
+nnoremap <C-j> 6<C-e>
+nnoremap <C-k> 6<C-y>
+
 vnoremap <Leader>dm :call DeleteVisualMatch()<CR>
 if !exists("g:neovide")
-vnoremap r <Plug>OSCYankVisual
+vnoremap cr <Plug>OSCYankVisual
 endif
 
 inoremap El ->
@@ -551,8 +575,8 @@ map cs :sp<cr>
 map cv :vsp<cr>
 map ca :Ranger<cr>
 map cq :copen 20<cr>
-map cL :call system('rm -rf *2025_Will_Rich_* tags \n')<cr>
 map ct :call GenerateTags()<cr>
+map cl :call system('rm -rf *2025_Will_Rich* tags \n')<cr>
 map E <Plug>(expand_region_expand)
 map 0 ^
 map <leader>cd :cd %:p:h<cr>:pwd<cr>
@@ -564,26 +588,23 @@ autocmd BufRead,BufNewFile * source ~/.vim/plugged/c.vim/ftplugin/c.vim
 autocmd BufRead,BufNewFile * source ~/.vim/plugged/c.vim/ftplugin/make.vim
 autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 autocmd InsertLeave * if pumvisible() == 0|pclose|endif
-autocmd VimLeave * call system("mv *_2025_Will_Rich_* tags/")
+autocmd VimLeave * call system("mv *2025_Will_Rich* tags/")
 autocmd BufRead * silent! call LoadTags()
 autocmd Syntax * source ~/.vim/plugged/c.vim/ftplugin/c.vim
 autocmd User FloatermExit :FloatermNew --autoclose=0 exit 0
-"autocmd BufRead,BufNewFile *  hi clear SignColumn
-"autocmd BufRead,BufNewFile *  hi clear LineNr
+autocmd BufRead,BufNewFile *  hi clear SignColumn
+autocmd BufRead,BufNewFile *  hi clear LineNr
 autocmd BufEnter * if !g:initial_directory_set | silent! lcd %:p:h | let g:initial_directory_set = 1 | endif
 
-hi TabLine      ctermfg=2 ctermbg=233
-hi TabLineSel   ctermfg=118
-hi TabLineFill  ctermfg=233
-hi ModeMsg ctermbg=233 ctermfg=2
-hi MoreMsg ctermbg=233 ctermfg=2
-hi Question ctermbg=233 ctermfg=2
-hi CursorLineNr ctermfg=2
-
-hi Search ctermbg=white ctermfg=black
-hi Visual ctermbg=235 ctermfg=none
+hi StatusLinePath guifg=#000000 guibg=#378737
+hi GitColor guifg=#000000 guibg=#378737
+hi StatusLineFileName guifg=#000000 guibg=#378737
+hi StatusFunction guifg=#000000 guibg=#378737
+hi MoDe guifg=#000000 guibg=#378737
+hi Color256C guifg=#000000 guibg=#378737
 
 nnoremap <leader>pp :setlocal paste!<cr>
+nnoremap <leader>L :LoadTags()<cr>
 " ======================= NEVIDIA 专属配置 =======================
 if exists("g:neovide")
 set linespace=8
@@ -592,7 +613,6 @@ let g:neovide_floating_blur = 1                " 浮动窗口模糊效果
 let g:neovide_multigrid = v:true               " 启用多网格渲染（提升性能）
 let g:neovide_underline_automatic_scaling = v:true  " 下划线自动缩放
 let g:neovide_fullscreen = v:true
-set relativenumber
 
 let g:neovide_cursor_animation_length = 0.1  "-- 动画时长
 let g:neovide_cursor_trail_size = 0.5         "-- 轨迹大小
@@ -651,12 +671,126 @@ inoremap <silent><expr> <CR> pumvisible() ? coc#_select_confirm() : "\<CR>"
 inoremap <silent><expr> <C-j> coc#pum#visible() ? coc#pum#next(1) : "\<C-j>"
 inoremap <silent><expr> <C-k> coc#pum#visible() ? coc#pum#prev(1) : "\<C-k>"
 inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<CR>"
-" 展开或跳转到下一个占位符
 imap <silent><expr> <Tab> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
-" 强制触发片段展开（即使补全菜单未打开）
 
 " 跳转片段占位符
 let g:coc_snippet_next = '<C-j>'
 let g:coc_snippet_prev = '<C-k>'
 """""""""""""""""""""""""""""""COC.NVIM"""""""""""""""""""""""""""""""""""
 
+if 0
+vim.cmd('source ' .. vim.fn.stdpath("config") .. '/init.VIM')
+vim.opt.runtimepath:append("~/.vim/plugged")
+
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+require('kanagawa').setup({
+    compile = true,             -- enable compiling the colorscheme
+    undercurl = true,            -- enable undercurls
+    commentStyle = { italic = true },
+    functionStyle = {},
+    keywordStyle = { italic = true},
+    statementStyle = { bold = true },
+    typeStyle = {},
+    transparent = false,         -- do not set background color
+    dimInactive = false,         -- dim inactive window `:h hl-NormalNC`
+    terminalColors = true,       -- define vim.g.terminal_color_{0,17}
+    colors = {                   -- add/modify theme and palette colors
+        palette = {},
+        theme = { wave = {}, lotus = {}, dragon = {}, all = {} },
+    },
+    overrides = function(colors) -- add/modify highlights
+        return {}
+    end,
+    theme = "wave",              -- Load "wave" theme
+    background = {               -- map the value of 'background' option to a theme
+        dark = "wave",           -- try "dragon" !
+        light = "lotus"
+    },
+})
+
+vim.api.nvim_set_option("mousemodel", "extend")
+vim.api.nvim_set_option("selectmode", "mouse,key")
+vim.cmd([[ set mousemodel=extend ]])  -- 支持拖拽调整窗口
+vim.o.mouse = 'a'              -- 全模式支持
+vim.o.mousemoveevent = true    -- 启用鼠标移动事件（Neovim 0.9+）
+vim.o.mousescroll = 'ver:3'    -- 滚轮垂直滚动3行
+
+vim.opt.guicursor = "n-v-c-sm:block,i-ci-ve:block,r-cr-o:block"
+
+-- 粘贴时不覆盖寄存器
+vim.keymap.set('v', 'p', '"_dP', { noremap = true })
+
+require("fzf-lua").setup {
+  -- fzf 命令行参数，设置预览窗口位置为上方并占满 100% 高度
+  fzf_opts = {
+    ["--preview-window"] = "down:50%"
+  },
+  -- fzf 窗口的布局选项
+  winopts = {
+    height = 1,   -- fzf 窗口高度占屏幕 95%
+    width  = 1,   -- 宽度占 95%
+	preview = {
+	  layout = 'horizontal',  -- vertical 或 horizontal
+	  horizontal = 'down:50%', -- 水平布局时占满全部宽度
+	}
+
+  }
+}
+
+require("scrollbar").setup()
+require('dressing').setup()
+require("notify").setup({
+  background_colour = "#1a1b26",  -- 设置背景色
+  stages = "slide",               -- 动画效果
+  timeout = 200,                 -- 2秒后消失
+  render = "minimal",             -- 简洁模式
+  max_width = math.floor(vim.api.nvim_win_get_width(0) / 2), -- 最大宽度
+  max_height = math.floor(vim.api.nvim_win_get_height(0) / 4), -- 最大高度
+  border = {                      -- 边框样式
+    style = "rounded",
+    padding = { 1, 2 },
+  },
+})
+
+require("noice").setup({
+  lsp = {
+    progress = {
+      enabled = false,  -- 禁用LSP进度通知
+    },
+    signature = {
+      enabled = false,  -- 禁用签名帮助
+    },
+  },
+  presets = {
+    command_palette = true,  -- 启用命令面板
+    long_message_to_split = true,  -- 长消息自动分割
+    inc_rename = true,  -- 启用增量重命名
+  },
+  views = {
+    cmdline_popup = {
+      position = { row = "100%", col = "50%" },
+      size = { width = "100%", height = "auto" },
+    },
+    cmdline_popupsearch = {
+      position = { row = "100%", col = "50%" },
+      size = { width = "100%", height = "auto" },
+    },
+    popupmenu = {
+      relative = "editor",
+      position = { row = "100%", col = "50%" },
+      size = { width = "100%", height = "auto" },
+    },
+  },
+  routes = {
+    -- 隐藏"已写入"消息
+    { filter = { event = "msg_show", find = "已写入" }, opts = { skip = true } },
+    -- 将错误消息显示为通知
+    { view = "notify", filter = { error = true } },
+  },
+})
+require'hop'.setup()
+--require('avante').setup()
+
+endif
