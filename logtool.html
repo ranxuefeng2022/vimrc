@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全屏日志分析工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --dark-color: #1a1a2e;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin: 15px;
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+        }
+        
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        h1 i {
+            font-size: 32px;
+            color: #4ecdc4;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-left: auto;
+            align-items: center;
+        }
+        
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-upload input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .btn {
+            padding: 10px 18px;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 15px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .btn.search {
+            background: var(--success-color);
+        }
+        
+        .btn.search:hover {
+            background: #219653;
+        }
+        
+        .btn.clear {
+            background: var(--danger-color);
+        }
+        
+        .btn.clear:hover {
+            background: #c0392b;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 18px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 6px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: var(--success-color);
+            box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.25);
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            margin-left: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 80px;
+        }
+        
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #4ecdc4;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #ecf0f1;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+        }
+        
+        .log-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .log-header {
+            padding: 14px 20px;
+            background: #f0f3f5;
+            border-bottom: 2px solid #dde4e8;
+            display: flex;
+            font-weight: 600;
+            color: #4a5c6c;
+            font-size: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .line-number-header {
+            width: 100px;
+            text-align: center;
+        }
+        
+        .log-content-header {
+            flex: 1;
+            padding-left: 10px;
+        }
+        
+        .log-display-wrapper {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .log-display {
+            flex: 1;
+            overflow: auto;
+            background: white;
+            padding: 12px 0;
+            position: relative;
+        }
+        
+        .log-content {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            white-space: pre;
+            color: #2c3e50;
+            min-width: 3000px;
+            padding: 0 20px;
+        }
+        
+        .line {
+            display: flex;
+            padding: 5px 0;
+            border-bottom: 1px solid #edf2f7;
+            transition: background 0.2s;
+        }
+        
+        .line:hover {
+            background-color: #f8fafc;
+        }
+        
+        .line-number {
+            width: 100px;
+            text-align: center;
+            color: #7f8c8d;
+            user-select: none;
+            font-size: 14px;
+            padding: 2px 10px;
+            font-weight: 500;
+        }
+        
+        .line-text {
+            flex: 1;
+            padding-right: 25px;
+            overflow: visible;
+            word-break: break-all;
+        }
+        
+        .highlight {
+            background-color: #ffeb3b;
+            color: #000;
+            padding: 2px 1px;
+            border-radius: 2px;
+        }
+        
+        .current-highlight {
+            background-color: #ff9800;
+            color: #000;
+            padding: 2px 1px;
+            font-weight: bold;
+            border-radius: 2px;
+            box-shadow: 0 0 0 2px rgba(255,152,0,0.3);
+        }
+        
+        .instructions {
+            padding: 30px;
+            text-align: center;
+            color: #5c6b7e;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #f9fbfd;
+            border-radius: 8px;
+            margin: 15px;
+        }
+        
+        .instructions i {
+            font-size: 60px;
+            color: #a3b1c2;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        
+        .instructions h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .instructions p {
+            max-width: 700px;
+            line-height: 1.8;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .key-shortcut {
+            display: inline-block;
+            background: #e3eaf2;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #cfd8e3;
+            font-family: monospace;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 4px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 15px;
+            color: #ecf0f1;
+            font-size: 14px;
+            background: rgba(0,0,0,0.15);
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 12px;
+            right: 20px;
+            background: rgba(44, 62, 80, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .keyboard-shortcuts {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .shortcut {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            padding: 8px;
+            border-radius: 6px;
+            min-width: 120px;
+        }
+        
+        .shortcut-key {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ff9800;
+        }
+        
+        .shortcut-label {
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 1200px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .controls {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+            
+            .stats {
+                margin-left: 0;
+                margin-top: 12px;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-file-alt"></i> 全屏日志分析工具</h1>
+            
+            <div class="controls">
+                <div class="file-upload">
+                    <button class="btn"><i class="fas fa-upload"></i> 导入日志文件</button>
+                    <input type="file" id="logFile" accept=".log,.txt">
+                </div>
+                
+                <input type="text" id="searchInput" class="search-box" placeholder="输入关键字搜索 (Enter向下查找, Ctrl+Enter向上查找)">
+                
+                <button id="searchBtn" class="btn search"><i class="fas fa-search"></i> 搜索</button>
+                <button id="clearBtn" class="btn clear"><i class="fas fa-times"></i> 清除</button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="lineCount">0</div>
+                    <div class="stat-label">总行数</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="matchCount">0</div>
+                    <div class="stat-label">匹配项</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="currentMatch">0</div>
+                    <div class="stat-label">当前位置</div>
+                </div>
+            </div>
+            
+            <div class="keyboard-shortcuts">
+                <div class="shortcut">
+                    <div class="shortcut-key">Enter</div>
+                    <div class="shortcut-label">向下查找</div>
+                </div>
+                <div class="shortcut">
+                    <div class="shortcut-key">Ctrl + Enter</div>
+                    <div class="shortcut-label">向上查找</div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="log-container">
+            <div class="log-header">
+                <div class="line-number-header">行号</div>
+                <div class="log-content-header">日志内容（横向滚动查看更多）</div>
+            </div>
+            
+            <div class="log-display-wrapper">
+                <div class="log-display" id="logContainer">
+                    <div class="instructions" id="instructions">
+                        <i class="fas fa-file-lines"></i>
+                        <h2>高级日志分析工具</h2>
+                        <p>导入日志文件，搜索关键字，按Enter键向下查找，按Ctrl+Enter键向上查找</p>
+                        <p>专为全屏设计，高度最大化利用屏幕空间</p>
+                        <p>使用提示：</p>
+                        <p>1. 点击 <span class="key-shortcut">导入日志文件</span> 按钮上传文件</p>
+                        <p>2. 在搜索框中输入关键字后点击 <span class="key-shortcut">搜索</span> 按钮</p>
+                        <p>3. 按 <span class="key-shortcut">Enter</span> 键向下查找下一个匹配项</p>
+                        <p>4. 按 <span class="key-shortcut">Ctrl+Enter</span> 键向上查找上一个匹配项</p>
+                        <p>5. 点击 <span class="key-shortcut">清除</span> 按钮可重置搜索</p>
+                        <p>6. 使用横向滚动条查看完整日志内容</p>
+                    </div>
+                    <div class="log-content" id="logContent"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scroll-indicator">
+            <i class="fas fa-arrows-left-right"></i> 使用横向滚动条查看完整内容
+        </div>
+    </div>
+    
+    <div class="footer">
+        &copy; 2023 全屏日志分析工具 | 高度最大化设计 | 支持向上/向下查找
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const logContent = document.getElementById('logContent');
+            const logFileInput = document.getElementById('logFile');
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const lineCountSpan = document.getElementById('lineCount');
+            const matchCountSpan = document.getElementById('matchCount');
+            const currentMatchSpan = document.getElementById('currentMatch');
+            const logContainer = document.getElementById('logContainer');
+            const instructions = document.getElementById('instructions');
+            
+            let logLines = [];
+            let currentMatches = [];
+            let currentMatchIndex = -1;
+            
+            // 文件上传处理
+            logFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    logLines = content.split('\n');
+                    lineCountSpan.textContent = logLines.length;
+                    renderLog(logLines);
+                    instructions.style.display = 'none';
+                    
+                    // 自动滚动到顶部
+                    logContainer.scrollTo(0, 0);
+                };
+                reader.readAsText(file);
+            });
+            
+            // 渲染日志内容
+            function renderLog(lines) {
+                let html = '';
+                lines.forEach((line, index) => {
+                    html += `<div class="line" data-line="${index}">
+                        <div class="line-number">${index + 1}</div>
+                        <div class="line-text">${escapeHtml(line)}</div>
+                    </div>`;
+                });
+                logContent.innerHTML = html;
+                currentMatches = [];
+                currentMatchIndex = -1;
+                matchCountSpan.textContent = '0';
+                currentMatchSpan.textContent = '0';
+            }
+            
+            // HTML转义
+            function escapeHtml(text) {
+                return text.replace(/&/g, "&amp;")
+                          .replace(/</g, "&lt;")
+                          .replace(/>/g, "&gt;")
+                          .replace(/"/g, "&quot;")
+                          .replace(/'/g, "&#039;");
+            }
+            
+            // 搜索功能
+            searchBtn.addEventListener('click', performSearch);
+            
+            // 键盘事件处理
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    if (e.ctrlKey) {
+                        // Ctrl+Enter 向上查找
+                        navigateToPreviousMatch();
+                        e.preventDefault();
+                    } else {
+                        // Enter 向下查找
+                        if (currentMatches.length > 0) {
+                            navigateToNextMatch();
+                            e.preventDefault();
+                        } else {
+                            performSearch();
+                            e.preventDefault();
+                        }
+                    }
+                }
+            });
+            
+            // 清除搜索
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                clearHighlights();
+                currentMatches = [];
+                currentMatchIndex = -1;
+                matchCountSpan.textContent = '0';
+                currentMatchSpan.textContent = '0';
+            });
+            
+            function performSearch() {
+                const searchTerm = searchInput.value.trim();
+                if (!searchTerm || logLines.length === 0) return;
+                
+                // 清除之前的高亮
+                clearHighlights();
+                
+                // 查找所有匹配项
+                currentMatches = [];
+                const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
+                
+                logLines.forEach((line, lineIndex) => {
+                    let match;
+                    while ((match = regex.exec(line)) !== null) {
+                        currentMatches.push({
+                            lineIndex: lineIndex,
+                            start: match.index,
+                            end: match.index + match[0].length
+                        });
+                    }
+                });
+                
+                matchCountSpan.textContent = currentMatches.length;
+                currentMatchIndex = currentMatches.length > 0 ? 0 : -1;
+                
+                if (currentMatches.length > 0) {
+                    currentMatchSpan.textContent = '1';
+                    highlightMatches();
+                    scrollToCurrentMatch();
+                } else {
+                    currentMatchSpan.textContent = '0';
+                }
+            }
+            
+            function navigateToNextMatch() {
+                if (currentMatches.length === 0) return;
+                
+                currentMatchIndex = (currentMatchIndex + 1) % currentMatches.length;
+                currentMatchSpan.textContent = currentMatchIndex + 1;
+                highlightMatches();
+                scrollToCurrentMatch();
+            }
+            
+            function navigateToPreviousMatch() {
+                if (currentMatches.length === 0) return;
+                
+                currentMatchIndex = (currentMatchIndex - 1 + currentMatches.length) % currentMatches.length;
+                currentMatchSpan.textContent = currentMatchIndex + 1;
+                highlightMatches();
+                scrollToCurrentMatch();
+            }
+            
+            function highlightMatches() {
+                // 清除之前的高亮
+                clearHighlights();
+                
+                // 获取所有行元素
+                const lineElements = logContent.querySelectorAll('.line');
+                
+                // 高亮所有匹配项
+                currentMatches.forEach((match, index) => {
+                    const lineElement = lineElements[match.lineIndex];
+                    if (!lineElement) return;
+                    
+                    const lineTextElement = lineElement.querySelector('.line-text');
+                    const lineText = lineTextElement.textContent;
+                    
+                    const before = lineText.substring(0, match.start);
+                    const matchedText = lineText.substring(match.start, match.end);
+                    const after = lineText.substring(match.end);
+                    
+                    lineTextElement.innerHTML = escapeHtml(before) + 
+                        `<span class="${index === currentMatchIndex ? 'current-highlight' : 'highlight'}">${escapeHtml(matchedText)}</span>` + 
+                        escapeHtml(after);
+                });
+            }
+            
+            function clearHighlights() {
+                const lineElements = logContent.querySelectorAll('.line');
+                lineElements.forEach(lineElement => {
+                    const lineTextElement = lineElement.querySelector('.line-text');
+                    if (lineTextElement) {
+                        lineTextElement.innerHTML = escapeHtml(lineTextElement.textContent);
+                    }
+                });
+            }
+            
+            function scrollToCurrentMatch() {
+                if (currentMatchIndex < 0 || currentMatchIndex >= currentMatches.length) return;
+                
+                const match = currentMatches[currentMatchIndex];
+                const lineElements = logContent.querySelectorAll('.line');
+                const matchedLineElement = lineElements[match.lineIndex];
+                
+                if (matchedLineElement) {
+                    // 计算滚动位置
+                    const containerRect = logContainer.getBoundingClientRect();
+                    const lineRect = matchedLineElement.getBoundingClientRect();
+                    
+                    // 垂直滚动
+                    const verticalScroll = lineRect.top - containerRect.top - (containerRect.height / 3);
+                    
+                    // 水平滚动（匹配项可能在很长的行中）
+                    const horizontalScroll = match.start > 200 ? match.start - 200 : 0;
+                    
+                    logContainer.scrollTo({
+                        top: verticalScroll + logContainer.scrollTop,
+                        left: horizontalScroll,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+            
+            // 转义正则表达式特殊字符
+            function escapeRegExp(string) {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+            
+            // 生成示例日志内容（带有超长行）
+            function generateSampleLog() {
+                const levels = ['INFO', 'DEBUG', 'WARN', 'ERROR'];
+                const messages = [
+                    'User login successful from IP: 192.168.1.105 with session ID: 7d3f8a2b-1c9e-4f6a-8b0d-3e7f2a1b4c6d',
+                    'Database connection established to server: db-prod-01.internal.net on port: 5432 with user: app_user_ro',
+                    'Request processing started for endpoint: /api/v2/users/profile/update with request ID: req-9a8b7c6d5e4f3g2h1 and client: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+                    'Cache updated successfully for key: user_prefs_8d7e6f5a4b3c2d1e with data size: 2.4MB and TTL: 3600 seconds',
+                    'File uploaded successfully: project_report_Q3_2023_final_v2_approved.pdf (size: 24.8MB) to bucket: company-documents with path: /finance/reports/2023/Q3/',
+                    'Invalid credentials provided for user: admin@example.com from IP: 203.0.113.45 - failed attempts: 3, lockout in: 2 attempts',
+                    'Disk space running low on volume: /dev/sda1 - current usage: 94.7% (total: 500GB, used: 473.5GB, free: 26.5GB) - please take action immediately',
+                    'Failed to connect to service: payment-gateway-service on endpoint: https://payments.company.com/api/v3/process with error: Connection timed out after 10000ms',
+                    'Backup process initiated for database: customer_db - estimated size: 12.4GB, target: s3://backups-company/db/customer/2023-10-15/',
+                    'Security alert detected: multiple failed login attempts from IP range: 192.168.1.100-192.168.1.150 - triggering firewall block for 24 hours'
+                ];
+                
+                const ips = ['192.168.1.1', '10.0.0.5', '172.16.0.3', '192.168.0.10'];
+                const users = ['admin', 'user1', 'guest', 'support'];
+                
+                let log = '';
+                for (let i = 0; i < 200; i++) {
+                    const date = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+                    const timestamp = date.toISOString().replace('T', ' ').substring(0, 19);
+                    const level = levels[Math.floor(Math.random() * levels.length)];
+                    const message = messages[Math.floor(Math.random() * messages.length)];
+                    const ip = ips[Math.floor(Math.random() * ips.length)];
+                    const user = users[Math.floor(Math.random() * users.length)];
+                    
+                    // 随机生成长度变化很大的行
+                    const longPadding = Math.random() > 0.7 ? ' '.repeat(150) : '';
+                    
+                    log += `${timestamp} [${level}] (${ip}) ${user}: ${longPadding}${message}\n`;
+                }
+                return log;
+            }
+            
+            // 加载示例日志
+            window.addEventListener('load', function() {
+                const sampleLog = generateSampleLog();
+                logLines = sampleLog.split('\n');
+                lineCountSpan.textContent = logLines.length;
+                renderLog(logLines);
+                instructions.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
