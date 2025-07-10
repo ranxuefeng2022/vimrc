@@ -1,743 +1,624 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全屏日志分析工具</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --success-color: #27ae60;
-            --danger-color: #e74c3c;
-            --warning-color: #f39c12;
-            --dark-color: #1a1a2e;
-            --light-color: #f8f9fa;
-        }
-        
-        body {
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: #333;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-            overflow: hidden;
-        }
-        
-        .container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            margin: 15px;
-            background: rgba(255, 255, 255, 0.97);
-            border-radius: 12px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-            overflow: hidden;
-        }
-        
-        header {
-            background: var(--primary-color);
-            color: white;
-            padding: 15px 25px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 15px;
-            border-bottom: 3px solid var(--secondary-color);
-        }
-        
-        h1 {
-            font-size: 28px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-        }
-        
-        h1 i {
-            font-size: 32px;
-            color: #4ecdc4;
-        }
-        
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-left: auto;
-            align-items: center;
-        }
-        
-        .file-upload {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-        
-        .file-upload input[type="file"] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .btn {
-            padding: 10px 18px;
-            background: var(--secondary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            font-size: 15px;
-        }
-        
-        .btn:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
-        }
-        
-        .btn.search {
-            background: var(--success-color);
-        }
-        
-        .btn.search:hover {
-            background: #219653;
-        }
-        
-        .btn.clear {
-            background: var(--danger-color);
-        }
-        
-        .btn.clear:hover {
-            background: #c0392b;
-        }
-        
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-            padding: 12px 18px;
-            border: 2px solid var(--secondary-color);
-            border-radius: 6px;
-            font-size: 16px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-        }
-        
-        .search-box:focus {
-            outline: none;
-            border-color: var(--success-color);
-            box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.25);
-        }
-        
-        .stats {
-            display: flex;
-            gap: 20px;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 500;
-            margin-left: 15px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .stat-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 80px;
-        }
-        
-        .stat-value {
-            font-size: 22px;
-            font-weight: 700;
-            color: #4ecdc4;
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            color: #ecf0f1;
-            text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
-        }
-        
-        .log-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .log-header {
-            padding: 14px 20px;
-            background: #f0f3f5;
-            border-bottom: 2px solid #dde4e8;
-            display: flex;
-            font-weight: 600;
-            color: #4a5c6c;
-            font-size: 16px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .line-number-header {
-            width: 100px;
-            text-align: center;
-        }
-        
-        .log-content-header {
-            flex: 1;
-            padding-left: 10px;
-        }
-        
-        .log-display-wrapper {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .log-display {
-            flex: 1;
-            overflow: auto;
-            background: white;
-            padding: 12px 0;
-            position: relative;
-        }
-        
-        .log-content {
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 15px;
-            line-height: 1.6;
-            white-space: pre;
-            color: #2c3e50;
-            min-width: 3000px;
-            padding: 0 20px;
-        }
-        
-        .line {
-            display: flex;
-            padding: 5px 0;
-            border-bottom: 1px solid #edf2f7;
-            transition: background 0.2s;
-        }
-        
-        .line:hover {
-            background-color: #f8fafc;
-        }
-        
-        .line-number {
-            width: 100px;
-            text-align: center;
-            color: #7f8c8d;
-            user-select: none;
-            font-size: 14px;
-            padding: 2px 10px;
-            font-weight: 500;
-        }
-        
-        .line-text {
-            flex: 1;
-            padding-right: 25px;
-            overflow: visible;
-            word-break: break-all;
-        }
-        
-        .highlight {
-            background-color: #ffeb3b;
-            color: #000;
-            padding: 2px 1px;
-            border-radius: 2px;
-        }
-        
-        .current-highlight {
-            background-color: #ff9800;
-            color: #000;
-            padding: 2px 1px;
-            font-weight: bold;
-            border-radius: 2px;
-            box-shadow: 0 0 0 2px rgba(255,152,0,0.3);
-        }
-        
-        .instructions {
-            padding: 30px;
-            text-align: center;
-            color: #5c6b7e;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: #f9fbfd;
-            border-radius: 8px;
-            margin: 15px;
-        }
-        
-        .instructions i {
-            font-size: 60px;
-            color: #a3b1c2;
-            margin-bottom: 20px;
-            opacity: 0.8;
-        }
-        
-        .instructions h2 {
-            font-size: 28px;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        
-        .instructions p {
-            max-width: 700px;
-            line-height: 1.8;
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-        
-        .key-shortcut {
-            display: inline-block;
-            background: #e3eaf2;
-            padding: 5px 10px;
-            border-radius: 4px;
-            border: 1px solid #cfd8e3;
-            font-family: monospace;
-            font-weight: 600;
-            color: #2c3e50;
-            margin: 0 4px;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 15px;
-            color: #ecf0f1;
-            font-size: 14px;
-            background: rgba(0,0,0,0.15);
-        }
-        
-        .scroll-indicator {
-            position: absolute;
-            bottom: 12px;
-            right: 20px;
-            background: rgba(44, 62, 80, 0.9);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            z-index: 5;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-        }
-        
-        .keyboard-shortcuts {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .shortcut {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: rgba(255,255,255,0.1);
-            padding: 8px;
-            border-radius: 6px;
-            min-width: 120px;
-        }
-        
-        .shortcut-key {
-            font-size: 22px;
-            font-weight: bold;
-            color: #ff9800;
-        }
-        
-        .shortcut-label {
-            font-size: 13px;
-            margin-top: 5px;
-        }
-        
-        @media (max-width: 1200px) {
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .controls {
-                margin-left: 0;
-                width: 100%;
-            }
-            
-            .search-box {
-                min-width: 100%;
-            }
-            
-            .stats {
-                margin-left: 0;
-                margin-top: 12px;
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-file-alt"></i> 全屏日志分析工具</h1>
-            
-            <div class="controls">
-                <div class="file-upload">
-                    <button class="btn"><i class="fas fa-upload"></i> 导入日志文件</button>
-                    <input type="file" id="logFile" accept=".log,.txt">
-                </div>
-                
-                <input type="text" id="searchInput" class="search-box" placeholder="输入关键字搜索 (Enter向下查找, Ctrl+Enter向上查找)">
-                
-                <button id="searchBtn" class="btn search"><i class="fas fa-search"></i> 搜索</button>
-                <button id="clearBtn" class="btn clear"><i class="fas fa-times"></i> 清除</button>
-            </div>
-            
-            <div class="stats">
-                <div class="stat-box">
-                    <div class="stat-value" id="lineCount">0</div>
-                    <div class="stat-label">总行数</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="matchCount">0</div>
-                    <div class="stat-label">匹配项</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="currentMatch">0</div>
-                    <div class="stat-label">当前位置</div>
-                </div>
-            </div>
-            
-            <div class="keyboard-shortcuts">
-                <div class="shortcut">
-                    <div class="shortcut-key">Enter</div>
-                    <div class="shortcut-label">向下查找</div>
-                </div>
-                <div class="shortcut">
-                    <div class="shortcut-key">Ctrl + Enter</div>
-                    <div class="shortcut-label">向上查找</div>
-                </div>
-            </div>
-        </header>
-        
-        <div class="log-container">
-            <div class="log-header">
-                <div class="line-number-header">行号</div>
-                <div class="log-content-header">日志内容（横向滚动查看更多）</div>
-            </div>
-            
-            <div class="log-display-wrapper">
-                <div class="log-display" id="logContainer">
-                    <div class="instructions" id="instructions">
-                        <i class="fas fa-file-lines"></i>
-                        <h2>高级日志分析工具</h2>
-                        <p>导入日志文件，搜索关键字，按Enter键向下查找，按Ctrl+Enter键向上查找</p>
-                        <p>专为全屏设计，高度最大化利用屏幕空间</p>
-                        <p>使用提示：</p>
-                        <p>1. 点击 <span class="key-shortcut">导入日志文件</span> 按钮上传文件</p>
-                        <p>2. 在搜索框中输入关键字后点击 <span class="key-shortcut">搜索</span> 按钮</p>
-                        <p>3. 按 <span class="key-shortcut">Enter</span> 键向下查找下一个匹配项</p>
-                        <p>4. 按 <span class="key-shortcut">Ctrl+Enter</span> 键向上查找上一个匹配项</p>
-                        <p>5. 点击 <span class="key-shortcut">清除</span> 按钮可重置搜索</p>
-                        <p>6. 使用横向滚动条查看完整日志内容</p>
-                    </div>
-                    <div class="log-content" id="logContent"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="scroll-indicator">
-            <i class="fas fa-arrows-left-right"></i> 使用横向滚动条查看完整内容
-        </div>
-    </div>
-    
-    <div class="footer">
-        &copy; 2023 全屏日志分析工具 | 高度最大化设计 | 支持向上/向下查找
-    </div>
+	<style>
+	/* 隐藏水平滚动条 */
+	body {
+		overflow-x: hidden;
+	}
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const logContent = document.getElementById('logContent');
-            const logFileInput = document.getElementById('logFile');
-            const searchInput = document.getElementById('searchInput');
-            const searchBtn = document.getElementById('searchBtn');
-            const clearBtn = document.getElementById('clearBtn');
-            const lineCountSpan = document.getElementById('lineCount');
-            const matchCountSpan = document.getElementById('matchCount');
-            const currentMatchSpan = document.getElementById('currentMatch');
-            const logContainer = document.getElementById('logContainer');
-            const instructions = document.getElementById('instructions');
-            
-            let logLines = [];
-            let currentMatches = [];
-            let currentMatchIndex = -1;
-            
-            // 文件上传处理
-            logFileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const content = e.target.result;
-                    logLines = content.split('\n');
-                    lineCountSpan.textContent = logLines.length;
-                    renderLog(logLines);
-                    instructions.style.display = 'none';
-                    
-                    // 自动滚动到顶部
-                    logContainer.scrollTo(0, 0);
-                };
-                reader.readAsText(file);
-            });
-            
-            // 渲染日志内容
-            function renderLog(lines) {
-                let html = '';
-                lines.forEach((line, index) => {
-                    html += `<div class="line" data-line="${index}">
-                        <div class="line-number">${index + 1}</div>
-                        <div class="line-text">${escapeHtml(line)}</div>
-                    </div>`;
-                });
-                logContent.innerHTML = html;
-                currentMatches = [];
-                currentMatchIndex = -1;
-                matchCountSpan.textContent = '0';
-                currentMatchSpan.textContent = '0';
-            }
-            
-            // HTML转义
-            function escapeHtml(text) {
-                return text.replace(/&/g, "&amp;")
-                          .replace(/</g, "&lt;")
-                          .replace(/>/g, "&gt;")
-                          .replace(/"/g, "&quot;")
-                          .replace(/'/g, "&#039;");
-            }
-            
-            // 搜索功能
-            searchBtn.addEventListener('click', performSearch);
-            
-            // 键盘事件处理
-            searchInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    if (e.ctrlKey) {
-                        // Ctrl+Enter 向上查找
-                        navigateToPreviousMatch();
-                        e.preventDefault();
-                    } else {
-                        // Enter 向下查找
-                        if (currentMatches.length > 0) {
-                            navigateToNextMatch();
-                            e.preventDefault();
-                        } else {
-                            performSearch();
-                            e.preventDefault();
-                        }
-                    }
-                }
-            });
-            
-            // 清除搜索
-            clearBtn.addEventListener('click', function() {
-                searchInput.value = '';
-                clearHighlights();
-                currentMatches = [];
-                currentMatchIndex = -1;
-                matchCountSpan.textContent = '0';
-                currentMatchSpan.textContent = '0';
-            });
-            
-            function performSearch() {
-                const searchTerm = searchInput.value.trim();
-                if (!searchTerm || logLines.length === 0) return;
-                
-                // 清除之前的高亮
-                clearHighlights();
-                
-                // 查找所有匹配项
-                currentMatches = [];
-                const regex = new RegExp(escapeRegExp(searchTerm), 'gi');
-                
-                logLines.forEach((line, lineIndex) => {
-                    let match;
-                    while ((match = regex.exec(line)) !== null) {
-                        currentMatches.push({
-                            lineIndex: lineIndex,
-                            start: match.index,
-                            end: match.index + match[0].length
-                        });
-                    }
-                });
-                
-                matchCountSpan.textContent = currentMatches.length;
-                currentMatchIndex = currentMatches.length > 0 ? 0 : -1;
-                
-                if (currentMatches.length > 0) {
-                    currentMatchSpan.textContent = '1';
-                    highlightMatches();
-                    scrollToCurrentMatch();
-                } else {
-                    currentMatchSpan.textContent = '0';
-                }
-            }
-            
-            function navigateToNextMatch() {
-                if (currentMatches.length === 0) return;
-                
-                currentMatchIndex = (currentMatchIndex + 1) % currentMatches.length;
-                currentMatchSpan.textContent = currentMatchIndex + 1;
-                highlightMatches();
-                scrollToCurrentMatch();
-            }
-            
-            function navigateToPreviousMatch() {
-                if (currentMatches.length === 0) return;
-                
-                currentMatchIndex = (currentMatchIndex - 1 + currentMatches.length) % currentMatches.length;
-                currentMatchSpan.textContent = currentMatchIndex + 1;
-                highlightMatches();
-                scrollToCurrentMatch();
-            }
-            
-            function highlightMatches() {
-                // 清除之前的高亮
-                clearHighlights();
-                
-                // 获取所有行元素
-                const lineElements = logContent.querySelectorAll('.line');
-                
-                // 高亮所有匹配项
-                currentMatches.forEach((match, index) => {
-                    const lineElement = lineElements[match.lineIndex];
-                    if (!lineElement) return;
-                    
-                    const lineTextElement = lineElement.querySelector('.line-text');
-                    const lineText = lineTextElement.textContent;
-                    
-                    const before = lineText.substring(0, match.start);
-                    const matchedText = lineText.substring(match.start, match.end);
-                    const after = lineText.substring(match.end);
-                    
-                    lineTextElement.innerHTML = escapeHtml(before) + 
-                        `<span class="${index === currentMatchIndex ? 'current-highlight' : 'highlight'}">${escapeHtml(matchedText)}</span>` + 
-                        escapeHtml(after);
-                });
-            }
-            
-            function clearHighlights() {
-                const lineElements = logContent.querySelectorAll('.line');
-                lineElements.forEach(lineElement => {
-                    const lineTextElement = lineElement.querySelector('.line-text');
-                    if (lineTextElement) {
-                        lineTextElement.innerHTML = escapeHtml(lineTextElement.textContent);
-                    }
-                });
-            }
-            
-            function scrollToCurrentMatch() {
-                if (currentMatchIndex < 0 || currentMatchIndex >= currentMatches.length) return;
-                
-                const match = currentMatches[currentMatchIndex];
-                const lineElements = logContent.querySelectorAll('.line');
-                const matchedLineElement = lineElements[match.lineIndex];
-                
-                if (matchedLineElement) {
-                    // 计算滚动位置
-                    const containerRect = logContainer.getBoundingClientRect();
-                    const lineRect = matchedLineElement.getBoundingClientRect();
-                    
-                    // 垂直滚动
-                    const verticalScroll = lineRect.top - containerRect.top - (containerRect.height / 3);
-                    
-                    // 水平滚动（匹配项可能在很长的行中）
-                    const horizontalScroll = match.start > 200 ? match.start - 200 : 0;
-                    
-                    logContainer.scrollTo({
-                        top: verticalScroll + logContainer.scrollTop,
-                        left: horizontalScroll,
-                        behavior: 'smooth'
-                    });
-                }
-            }
-            
-            // 转义正则表达式特殊字符
-            function escapeRegExp(string) {
-                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            }
-            
-            // 生成示例日志内容（带有超长行）
-            function generateSampleLog() {
-                const levels = ['INFO', 'DEBUG', 'WARN', 'ERROR'];
-                const messages = [
-                    'User login successful from IP: 192.168.1.105 with session ID: 7d3f8a2b-1c9e-4f6a-8b0d-3e7f2a1b4c6d',
-                    'Database connection established to server: db-prod-01.internal.net on port: 5432 with user: app_user_ro',
-                    'Request processing started for endpoint: /api/v2/users/profile/update with request ID: req-9a8b7c6d5e4f3g2h1 and client: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
-                    'Cache updated successfully for key: user_prefs_8d7e6f5a4b3c2d1e with data size: 2.4MB and TTL: 3600 seconds',
-                    'File uploaded successfully: project_report_Q3_2023_final_v2_approved.pdf (size: 24.8MB) to bucket: company-documents with path: /finance/reports/2023/Q3/',
-                    'Invalid credentials provided for user: admin@example.com from IP: 203.0.113.45 - failed attempts: 3, lockout in: 2 attempts',
-                    'Disk space running low on volume: /dev/sda1 - current usage: 94.7% (total: 500GB, used: 473.5GB, free: 26.5GB) - please take action immediately',
-                    'Failed to connect to service: payment-gateway-service on endpoint: https://payments.company.com/api/v3/process with error: Connection timed out after 10000ms',
-                    'Backup process initiated for database: customer_db - estimated size: 12.4GB, target: s3://backups-company/db/customer/2023-10-15/',
-                    'Security alert detected: multiple failed login attempts from IP range: 192.168.1.100-192.168.1.150 - triggering firewall block for 24 hours'
-                ];
-                
-                const ips = ['192.168.1.1', '10.0.0.5', '172.16.0.3', '192.168.0.10'];
-                const users = ['admin', 'user1', 'guest', 'support'];
-                
-                let log = '';
-                for (let i = 0; i < 200; i++) {
-                    const date = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
-                    const timestamp = date.toISOString().replace('T', ' ').substring(0, 19);
-                    const level = levels[Math.floor(Math.random() * levels.length)];
-                    const message = messages[Math.floor(Math.random() * messages.length)];
-                    const ip = ips[Math.floor(Math.random() * ips.length)];
-                    const user = users[Math.floor(Math.random() * users.length)];
-                    
-                    // 随机生成长度变化很大的行
-                    const longPadding = Math.random() > 0.7 ? ' '.repeat(150) : '';
-                    
-                    log += `${timestamp} [${level}] (${ip}) ${user}: ${longPadding}${message}\n`;
-                }
-                return log;
-            }
-            
-            // 加载示例日志
-            window.addEventListener('load', function() {
-                const sampleLog = generateSampleLog();
-                logLines = sampleLog.split('\n');
-                lineCountSpan.textContent = logLines.length;
-                renderLog(logLines);
-                instructions.style.display = 'none';
-            });
-        });
-    </script>
+	/* 隐藏垂直滚动条 */
+	body {
+		overflow-y: hidden;
+	}
+	</style>
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>高级日志分析工具 - 关键词颜色高亮</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					colors: {
+						primary: '#165DFF',
+						secondary: '#0e42c7',
+						neutral: '#86909C',
+						dark: '#1d2129'
+					},
+					fontFamily: {
+						mono: ['Consolas', 'Monaco', 'monospace']
+					}
+				}
+			}
+		}
+	</script>
+
+	<style type="text/tailwindcss">
+		@layer utilities {
+			.log-container {
+				height: calc(100vh - 185px); /* 增加高度适应新UI */
+				overflow-y: auto;
+			}
+			.horizontal-scrollbar {
+				position: sticky;
+				bottom: 0;
+				z-index: 10;
+				background-color: white;
+				border-top: 1px solid #eee;
+			}
+			.sync-scroll {
+				scrollbar-width: thin;
+			}
+			.key-hint {
+				@apply inline-block bg-gray-100 text-gray-700 text-xs px-1.5 py-0.5 rounded mx-0.5;
+			}
+			/* 高亮颜色定义 */
+			.highlight-0 { @apply bg-yellow-200 text-gray-800; }
+			.highlight-1 { @apply bg-blue-200 text-gray-800; }
+			.highlight-2 { @apply bg-green-200 text-gray-800; }
+			.highlight-3 { @apply bg-pink-200 text-gray-800; }
+			.highlight-4 { @apply bg-purple-200 text-gray-800; }
+			.highlight-5 { @apply bg-orange-200 text-gray-800; }
+			.highlight-6 { @apply bg-cyan-200 text-gray-800; }
+			.highlight-7 { @apply bg-red-200 text-gray-800; }
+			.highlight-8 { @apply bg-lime-200 text-gray-800; }
+			.highlight-9 { @apply bg-amber-200 text-gray-800; }
+		}
+	</style>
+</head>
+<body class="bg-gray-50 m-0 p-0 font-sans">
+	<!-- 顶部导航 -->
+	<header class="bg-gradient-to-r from-primary to-secondary shadow-xs p-3">
+		<div class="flex justify-between items-center">
+			<div class="flex items-center">
+				<i class="fa fa-file-text-o text-white mr-2 text-xl"></i>
+				<h1 class="text-xl font-bold text-white">高级电源日志分析工具(如遇到问题找冉雪峰 11143232)</h1>
+			</div>
+			<div class="flex gap-2">
+				<button id="uploadBtn" class="bg-white text-primary px-4 py-2 rounded-lg text-sm flex items-center font-medium hover:bg-gray-50 transition">
+					<i class="fa fa-upload mr-2"></i>导入日志
+				</button>
+				<button id="copyBtn" class="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center">
+					<i class="fa fa-copy mr-2"></i>复制
+				</button>
+			</div>
+		</div>
+	</header>
+
+	<!-- 搜索和快捷键提示区域 -->
+	<div class="bg-white border-b border-gray-100 p-4">
+		<div class="flex flex-wrap items-center gap-4">
+			<!-- 搜索框区域（保持不变） -->
+			<div class="relative flex-1 min-w-[300px] max-w-3xl">
+				<div class="flex items-center gap-2 mb-2">
+					<i class="fa fa-search text-neutral"></i>
+					<input type="text" id="searchInput" placeholder="搜索日志内容（支持空格分隔多关键词）..."
+						   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+					<button id="clearSearch" class="text-neutral hover:text-gray-700 transition hidden">
+						<i class="fa fa-times-circle text-lg"></i>
+					</button>
+				</div>
+
+				<!-- 关键词颜色图例 -->
+				<div id="keywordLegend" class="flex flex-wrap gap-2 mt-2 hidden">
+					<span class="text-xs text-gray-600">关键词颜色:</span>
+				</div>
+			</div>
+
+			<!-- 修改后的选项和快捷键区域 -->
+			<div class="flex items-start gap-4">
+				<!-- 选项区域 - 改为水平排列 -->
+				<div class="flex gap-4 text-sm bg-gray-50 p-3 rounded-lg border border-gray-200 border-[0.5px]">
+					<label class="flex items-center text-gray-700 cursor-pointer whitespace-nowrap">
+						<input type="checkbox" id="regexCheckbox" class="mr-2 h-4 w-4 text-primary rounded focus:ring-primary">
+						正则表达式
+					</label>
+					<label class="flex items-center text-gray-700 cursor-pointer whitespace-nowrap">
+						<input type="checkbox" id="ignoreCaseCheckbox" class="mr-2 h-4 w-4 text-primary rounded focus:ring-primary" checked>
+						忽略大小写
+					</label>
+					<div id="searchError" class="flex items-center text-red-500 text-sm hidden ml-2">
+						<i class="fa fa-exclamation-triangle mr-1"></i><span></span>
+					</div>
+				</div>
+
+				<!-- 快捷键提示区域 -->
+				<div class="text-sm bg-gray-50 p-3 rounded-lg border border-gray-200 border-[0.5px]">
+					<div class="flex flex-wrap gap-2 text-xs">
+						<div class="flex items-center">
+							<span class="key-hint">←</span>
+							<span class="text-gray-600 ml-1">向左滚动</span>
+						</div>
+						<div class="flex items-center">
+							<span class="key-hint">→</span>
+							<span class="text-gray-600 ml-1">向右滚动</span>
+						</div>
+						<div class="flex items-center">
+							<span class="key-hint">Shift+←</span>
+							<span class="text-gray-600 ml-1">快速左滚</span>
+						</div>
+						<div class="flex items-center">
+							<span class="key-hint">Shift+→</span>
+							<span class="text-gray-600 ml-1">快速右滚</span>
+						</div>
+						<div class="flex items-center">
+							<span class="key-hint">F</span>
+							<span class="text-gray-600 ml-1">聚焦搜索框</span>
+						</div>
+						<div class="flex items-center">
+							<span class="key-hint">Esc</span>
+							<span class="text-gray-600 ml-1">清除搜索</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 计数区域 -->
+			<div class="ml-auto text-sm text-gray-700 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 border-[0.5px]">
+				<div class="flex items-center">
+					<span id="matchCount" class="font-medium">0 条匹配</span>
+					<span class="mx-2 text-gray-400">|</span>
+					<span id="totalCount" class="font-medium">共 0 条</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 日志内容区域 -->
+	<div class="p-4">
+		<!-- 日志显示容器 -->
+		<div class="border border-gray-200 border-t-0 rounded-b-lg bg-white shadow-sm">
+			<!-- 日志文本区域 - 纵向滚动 -->
+			<div id="logContent" class="log-container font-mono text-sm">
+				<div id="logLines" class="divide-y divide-gray-100">
+					<!-- 日志内容将通过JS填充 -->
+				</div>
+			</div>
+
+			<!-- 横向滚动条 - 固定在底部，与内容同步滚动 -->
+			<div class="horizontal-scrollbar">
+				<div id="syncScroll" class="sync-scroll h-3">
+					<div id="scrollProxy" class="h-3"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		//LOGENGIN_INIT_DATA
+
+		// DOM元素
+		const logLinesEl = document.getElementById('logLines');
+		const logContentEl = document.getElementById('logContent');
+		const syncScrollEl = document.getElementById('syncScroll');
+		const scrollProxyEl = document.getElementById('scrollProxy');
+		const searchInputEl = document.getElementById('searchInput');
+		const clearSearchEl = document.getElementById('clearSearch');
+		const matchCountEl = document.getElementById('matchCount');
+		const totalCountEl = document.getElementById('totalCount');
+		const uploadBtnEl = document.getElementById('uploadBtn');
+		const copyBtnEl = document.getElementById('copyBtn');
+		const regexCheckbox = document.getElementById('regexCheckbox');
+		const ignoreCaseCheckbox = document.getElementById('ignoreCaseCheckbox');
+		const searchErrorEl = document.getElementById('searchError');
+		const keywordLegendEl = document.getElementById('keywordLegend');
+
+		// 滚动配置
+		const SCROLL_SPEED = 50;	   // 普通滚动速度
+		const FAST_SCROLL_SPEED = 200; // 快速滚动速度（Shift+方向键）
+
+		// 当前日志数据
+		let currentLogs = [...logData];
+		// 高亮颜色池
+		const highlightColors = [
+			'highlight-0', // 黄色
+			'highlight-1', // 蓝色
+			'highlight-2', // 绿色
+			'highlight-3', // 粉色
+			'highlight-4', // 紫色
+			'highlight-5', // 橙色
+			'highlight-6', // 青色
+			'highlight-7', // 红色
+			'highlight-8', // 青柠色
+			'highlight-9'  // 琥珀色
+		];
+		// 关键词到颜色的映射
+		let keywordColorMap = {};
+
+		// 初始化
+		function init() {
+			renderLogs(currentLogs);
+			setupScrollSync();
+			setupEventListeners();
+			setupKeyboardNavigation();
+			updateCounters(currentLogs.length, 0);
+		}
+
+		// 渲染日志
+		function renderLogs(logs) {
+			logLinesEl.innerHTML = '';
+
+			logs.forEach((log, index) => {
+				const lineEl = document.createElement('div');
+				lineEl.className = 'flex py-2 px-4 hover:bg-gray-50 transition-colors';
+
+				// 行号
+				const lineNum = document.createElement('span');
+				lineNum.className = 'text-neutral w-10 text-right pr-3 border-r border-gray-100 mr-3 select-none';
+				lineNum.textContent = index + 1;
+
+				// 日志文本
+				const logText = document.createElement('span');
+				logText.className = 'whitespace-nowrap';
+				logText.textContent = log;
+
+				lineEl.appendChild(lineNum);
+				lineEl.appendChild(logText);
+				logLinesEl.appendChild(lineEl);
+			});
+
+			// 更新滚动代理宽度以匹配内容宽度
+			scrollProxyEl.style.width = `${logLinesEl.scrollWidth}px`;
+		}
+
+		// 设置滚动同步 - 横向滚动条与内容同步
+		function setupScrollSync() {
+			// 当内容横向滚动时，同步滚动条位置
+			logContentEl.addEventListener('scroll', (e) => {
+				syncScrollEl.scrollLeft = e.target.scrollLeft;
+			});
+
+			// 当滚动条滚动时，同步内容位置
+			syncScrollEl.addEventListener('scroll', (e) => {
+				logContentEl.scrollLeft = e.target.scrollLeft;
+			});
+		}
+
+		// 设置键盘导航 - 左右方向键控制横向滚动
+		function setupKeyboardNavigation() {
+			document.addEventListener('keydown', (e) => {
+				// 如果搜索框聚焦，则不处理滚动（避免影响输入）
+				if (document.activeElement === searchInputEl) {
+					// 支持Esc清除搜索
+					if (e.key === 'Escape') {
+						clearSearch();
+					}
+					return;
+				}
+
+				// F键聚焦搜索框
+				if (e.key === 'f' || e.key === 'F') {
+					// 检查是否按下了Ctrl键
+					if (e.ctrlKey || e.metaKey) {
+						// 如果是Ctrl+F，则允许浏览器默认行为
+						return;
+					}
+					e.preventDefault();
+					searchInputEl.focus();
+					searchInputEl.select();
+					searchBoxEl.classList.add('focused');
+					showToast('已聚焦搜索框 - 按Enter搜索');
+					return;
+				}
+
+				// 支持Esc清除搜索
+				if (e.key === 'Escape') {
+					clearSearch();
+					return;
+				}
+
+				const isShiftPressed = e.shiftKey;
+				const scrollAmount = isShiftPressed ? FAST_SCROLL_SPEED : SCROLL_SPEED;
+
+				// 左方向键 - 向左滚动
+				if (e.key === 'ArrowLeft') {
+					e.preventDefault(); // 阻止页面默认滚动行为
+					const newScrollLeft = logContentEl.scrollLeft - scrollAmount;
+					logContentEl.scrollLeft = Math.max(0, newScrollLeft);
+				}
+
+				// 右方向键 - 向右滚动
+				if (e.key === 'ArrowRight') {
+					e.preventDefault(); // 阻止页面默认滚动行为
+					const maxScroll = logLinesEl.scrollWidth - logContentEl.clientWidth;
+					const newScrollLeft = logContentEl.scrollLeft + scrollAmount;
+					logContentEl.scrollLeft = Math.min(maxScroll, newScrollLeft);
+				}
+			});
+		}
+
+		// 设置事件监听
+		function setupEventListeners() {
+			// 搜索功能
+
+			// 添加 Enter 键事件监听
+			searchInputEl.addEventListener('keydown', function(e) {
+				if (e.key === 'Enter' || e.keyCode === 13) {
+					handleSearch(); // 仅在按下 Enter 时触发搜索
+				}
+			});
+
+			clearSearchEl.addEventListener('click', clearSearch);
+
+			// 正则和忽略大小写设置改变时重新搜索
+			regexCheckbox.addEventListener('change', handleSearch);
+			ignoreCaseCheckbox.addEventListener('change', handleSearch);
+
+			// 上传日志
+			uploadBtnEl.addEventListener('click', () => {
+				const fileInput = document.createElement('input');
+				fileInput.type = 'file';
+
+				fileInput.setAttribute('data-allow-no-extension', 'true');
+				fileInput.onchange = handleFileUpload;
+				fileInput.click();
+			});
+
+			// 复制日志
+			copyBtnEl.addEventListener('click', copyLogs);
+		}
+
+		// 处理搜索
+		function handleSearch() {
+			const searchTerm = searchInputEl.value.trim();
+			const isRegex = regexCheckbox.checked;
+			const ignoreCase = ignoreCaseCheckbox.checked;
+
+			// 清除之前的错误提示
+			searchErrorEl.classList.add('hidden');
+			searchInputEl.classList.remove('border-red-500');
+
+			// 显示/隐藏清除按钮
+			clearSearchEl.style.display = searchTerm ? 'block' : 'none';
+
+			if (!searchTerm) {
+				// 无搜索词，显示所有日志
+				renderLogs(currentLogs);
+				updateCounters(currentLogs.length, 0);
+				keywordLegendEl.classList.add('hidden');
+				return;
+			}
+
+			try {
+				// 重置关键词颜色映射
+				keywordColorMap = {};
+
+				// 过滤日志
+				let filteredLogs;
+				if (isRegex) {
+					// 正则模式 - 整个正则作为一个"关键词"
+					const regex = new RegExp(searchTerm, ignoreCase ? 'gi' : 'g');
+					filteredLogs = currentLogs.filter(log => regex.test(log));
+
+					// 为整个正则分配一个颜色
+					keywordColorMap[searchTerm] = highlightColors[0];
+					updateKeywordLegend();
+				} else {
+					// 普通模式 - 支持多个关键词（空格分隔）
+					const keywords = searchTerm.split(/\s+/).filter(k => k.length > 0);
+
+					if (keywords.length === 0) {
+						filteredLogs = currentLogs;
+					} else {
+						// 为每个关键词分配颜色
+						keywords.forEach((keyword, index) => {
+							const normalizedKeyword = ignoreCase ? keyword.toLowerCase() : keyword;
+							keywordColorMap[normalizedKeyword] = highlightColors[index % highlightColors.length];
+						});
+
+						updateKeywordLegend();
+
+						// 创建正则表达式匹配所有关键词
+						const regex = new RegExp(
+							keywords.map(k => escapeRegExp(k)).join('|'),
+							ignoreCase ? 'gi' : 'g'
+						);
+
+						filteredLogs = currentLogs.filter(log => regex.test(log));
+					}
+				}
+
+				renderLogs(filteredLogs);
+				updateCounters(currentLogs.length, filteredLogs.length);
+				highlightMatches(searchTerm, isRegex, ignoreCase);
+			} catch (e) {
+				// 处理正则表达式错误
+				searchErrorEl.querySelector('span').textContent = e.message;
+				searchErrorEl.classList.remove('hidden');
+				searchInputEl.classList.add('border-red-500');
+				keywordLegendEl.classList.add('hidden');
+			}
+		}
+
+		// 更新关键词颜色图例
+		function updateKeywordLegend() {
+			keywordLegendEl.innerHTML = '<span class="text-xs text-gray-600">关键词颜色:</span>';
+
+			Object.entries(keywordColorMap).forEach(([keyword, colorClass]) => {
+				const legendItem = document.createElement('div');
+				legendItem.className = `flex items-center text-xs ml-2`;
+
+				const colorBox = document.createElement('span');
+				colorBox.className = `inline-block w-3 h-3 rounded-full mr-1 ${colorClass}`;
+
+				const keywordText = document.createElement('span');
+				keywordText.className = 'text-gray-700';
+				keywordText.textContent = keyword.length > 10 ? `${keyword.substring(0, 8)}...` : keyword;
+
+				legendItem.appendChild(colorBox);
+				legendItem.appendChild(keywordText);
+				keywordLegendEl.appendChild(legendItem);
+			});
+
+			keywordLegendEl.classList.remove('hidden');
+		}
+
+		// 清除搜索
+		function clearSearch() {
+			searchInputEl.value = '';
+			clearSearchEl.style.display = 'none';
+			searchErrorEl.classList.add('hidden');
+			searchInputEl.classList.remove('border-red-500');
+			keywordLegendEl.classList.add('hidden');
+			renderLogs(currentLogs);
+			updateCounters(currentLogs.length, 0);
+		}
+
+		// 高亮匹配内容（确保相同关键词使用相同颜色）
+		function highlightMatches(term, isRegex, ignoreCase) {
+			const logTexts = logLinesEl.querySelectorAll('span:last-child');
+
+			logTexts.forEach(textEl => {
+				const text = textEl.textContent;
+				let html = '';
+				let lastIndex = 0;
+				let match;
+
+				try {
+					if (isRegex) {
+						// 正则模式 - 整个正则作为一个"关键词"
+						const regex = new RegExp(term, ignoreCase ? 'gi' : 'g');
+						const colorClass = keywordColorMap[term];
+
+						while ((match = regex.exec(text)) !== null) {
+							// 匹配之前的文本
+							const before = text.substring(lastIndex, match.index);
+							// 匹配的文本
+							const matchedText = match[0];
+
+							// 添加到HTML
+							html += before + `<span class="${colorClass} px-0.5 rounded">${matchedText}</span>`;
+
+							// 更新最后索引
+							lastIndex = match.index + matchedText.length;
+
+							// 避免零长度匹配导致无限循环
+							if (match.index === regex.lastIndex) {
+								regex.lastIndex++;
+							}
+						}
+					} else {
+						// 普通模式 - 支持多个关键词
+						const keywords = term.split(/\s+/).filter(k => k.length > 0);
+
+						if (keywords.length > 0) {
+							// 创建正则表达式匹配所有关键词
+							const regex = new RegExp(
+								keywords.map(k => escapeRegExp(k)).join('|'),
+								ignoreCase ? 'gi' : 'g'
+							);
+
+							while ((match = regex.exec(text)) !== null) {
+								// 匹配之前的文本
+								const before = text.substring(lastIndex, match.index);
+								// 匹配的文本
+								const matchedText = match[0];
+								// 获取关键词对应的颜色
+								const keyword = ignoreCase ? matchedText.toLowerCase() : matchedText;
+								const colorClass = Object.entries(keywordColorMap).find(
+									([k]) => ignoreCase
+										? keyword.includes(k.toLowerCase())
+										: keyword.includes(k)
+								)?.[1] || highlightColors[0];
+
+								// 添加到HTML
+								html += before + `<span class="${colorClass} px-0.5 rounded">${matchedText}</span>`;
+
+								// 更新最后索引
+								lastIndex = match.index + matchedText.length;
+
+								// 避免零长度匹配导致无限循环
+								if (match.index === regex.lastIndex) {
+									regex.lastIndex++;
+								}
+							}
+						}
+					}
+
+					// 添加剩余文本
+					html += text.substring(lastIndex);
+					textEl.innerHTML = html;
+				} catch (e) {
+					// 出错时恢复原始文本
+					textEl.textContent = text;
+				}
+			});
+		}
+
+		// 转义正则表达式特殊字符
+		function escapeRegExp(string) {
+			return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		}
+
+		// 更新计数器
+		function updateCounters(total, matches) {
+			totalCountEl.textContent = `共 ${total} 条`;
+			matchCountEl.textContent = `${matches} 条匹配`;
+		}
+
+		// 处理文件上传
+		function handleFileUpload(e) {
+			const file = e.target.files[0];
+			if (!file) return;
+
+			const reader = new FileReader();
+			reader.onload = (event) => {
+				const content = event.target.result;
+				currentLogs = content.split('\n').filter(line => line.trim());
+				renderLogs(currentLogs);
+				clearSearch();
+				updateCounters(currentLogs.length, 0);
+			};
+			reader.readAsText(file);
+		}
+
+		// 复制日志
+		function copyLogs() {
+			const textToCopy = currentLogs.join('\n');
+			navigator.clipboard.writeText(textToCopy)
+				.then(() => {
+					showToast('日志已复制到剪贴板');
+				})
+				.catch(() => {
+					showToast('复制失败，请手动复制', 'error');
+				});
+		}
+
+		// 显示提示消息
+		function showToast(message, type = 'success') {
+			const toast = document.createElement('div');
+			toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg text-sm transition-all duration-300 transform translate-y-10 opacity-0 flex items-center`;
+
+			if (type === 'success') {
+				toast.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
+				toast.innerHTML = `<i class="fa fa-check-circle mr-2"></i> ${message}`;
+			} else {
+				toast.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
+				toast.innerHTML = `<i class="fa fa-exclamation-circle mr-2"></i> ${message}`;
+			}
+
+			document.body.appendChild(toast);
+
+			// 显示
+			setTimeout(() => {
+				toast.classList.remove('translate-y-10', 'opacity-0');
+				toast.classList.add('translate-y-0', 'opacity-100');
+			}, 10);
+
+			// 隐藏
+			setTimeout(() => {
+				toast.classList.remove('translate-y-0', 'opacity-100');
+				toast.classList.add('translate-y-10', 'opacity-0');
+				setTimeout(() => toast.remove(), 300);
+			}, 2000);
+		}
+
+		// 页面加载完成后初始化
+		document.addEventListener('DOMContentLoaded', init);
+	</script>
 </body>
 </html>
