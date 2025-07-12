@@ -76,7 +76,13 @@
 		<div class="flex justify-between items-center">
 			<div class="flex items-center">
 				<i class="fa fa-file-text-o text-white mr-2 text-xl"></i>
-				<h1 class="text-xl font-bold text-white">高级电源日志分析工具(如遇到问题找冉雪峰 11143232)</h1>
+				<h1 class="text-xl font-bold text-white inline-block">高级电源日志分析工具(如遇到问题找冉雪峰 11143232)</h1>
+				<a href="//172.16.191.214/moduleParser/powerLparser/tools/PowerCenter.html" 
+					target="_blank"
+					rel="noopener noreferrer"
+					class="ml-4 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-1 px-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+					🔥 猛戳这里获得更多信息 🔥
+				</a>
 			</div>
 			<div class="flex gap-2">
 				<button id="uploadBtn" class="bg-white text-primary px-4 py-2 rounded-lg text-sm flex items-center font-medium hover:bg-gray-50 transition">
@@ -146,12 +152,16 @@
 							<span class="text-gray-600 ml-1">快速右滚</span>
 						</div>
 						<div class="flex items-center">
-							<span class="key-hint">F</span>
+							<span class="key-hint">F/f</span>
 							<span class="text-gray-600 ml-1">聚焦搜索框</span>
 						</div>
 						<div class="flex items-center">
 							<span class="key-hint">Esc</span>
 							<span class="text-gray-600 ml-1">清除搜索</span>
+						</div>
+						<div class="flex items-center">
+							<span class="key-hint">Alt+x</span>
+							<span class="text-gray-600 ml-1">全屏</span>
 						</div>
 					</div>
 				</div>
@@ -236,6 +246,62 @@
 			setupEventListeners();
 			setupKeyboardNavigation();
 			updateCounters(currentLogs.length, 0);
+			initEventListeners();
+		}
+
+		// 全屏切换函数
+		function toggleFullscreen() {
+			if (!document.fullscreenElement) {
+				// 进入全屏
+				if (document.documentElement.requestFullscreen) {
+					document.documentElement.requestFullscreen();
+				} else if (document.documentElement.webkitRequestFullscreen) {
+					document.documentElement.webkitRequestFullscreen();
+				} else if (document.documentElement.msRequestFullscreen) {
+					document.documentElement.msRequestFullscreen();
+				}
+				showToast('退出全屏继续按Alt+x');
+			} else {
+				// 退出全屏
+				if (document.exitFullscreen) {
+					document.exitFullscreen();
+				} else if (document.webkitExitFullscreen) {
+					document.webkitExitFullscreen();
+				} else if (document.msExitFullscreen) {
+					document.msExitFullscreen();
+				}
+			}
+		}
+
+		// 处理全屏变化
+		function handleFullscreenChange() {
+			if (document.fullscreenElement) {
+				fullscreenInfo.style.display = 'block';
+			} else {
+				fullscreenInfo.style.display = 'none';
+			}
+		}
+
+		// 设置快捷键监听
+		function setupShortcutListener() {
+			document.addEventListener('keydown', (e) => {
+				// 检测 Alt + X
+				if (e.altKey && (e.key === 'x' || e.key === 'X')) {
+					toggleFullscreen();
+					e.preventDefault();
+				}
+			});
+		}
+
+		// 初始化事件监听器
+		function initEventListeners() {
+			// 全屏事件监听
+			document.addEventListener('fullscreenchange', handleFullscreenChange);
+			document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+			document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+			// 设置快捷键
+			setupShortcutListener();
 		}
 
 		// 渲染日志
@@ -333,7 +399,6 @@
 
 		// 设置事件监听
 		function setupEventListeners() {
-			// 搜索功能
 
 			// 添加 Enter 键事件监听
 			searchInputEl.addEventListener('keydown', function(e) {
@@ -589,33 +654,90 @@
 		}
 
 		// 显示提示消息
-		function showToast(message, type = 'success') {
+		/**
+		 * 显示轻量级提示消息
+		 * @param {string} message - 提示内容
+		 * @param {object} options - 配置选项
+		 * @param {string} options.type - 提示类型: 'success' | 'error' | 'warning' | 'info'
+		 * @param {number} options.duration - 显示时长(毫秒)
+		 */
+		function showToast(message, options = {}) {
+			// 合并默认配置
+			const config = {
+				type: 'success',
+				duration: 900,
+				...options
+			};
+
+			// 创建提示容器
 			const toast = document.createElement('div');
-			toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg text-sm transition-all duration-300 transform translate-y-10 opacity-0 flex items-center`;
 
-			if (type === 'success') {
-				toast.classList.add('bg-green-50', 'text-green-700', 'border', 'border-green-200');
-				toast.innerHTML = `<i class="fa fa-check-circle mr-2"></i> ${message}`;
-			} else {
-				toast.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
-				toast.innerHTML = `<i class="fa fa-exclamation-circle mr-2"></i> ${message}`;
-			}
+			// 设置基础样式
+			toast.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-5 py-3 rounded-lg shadow-lg text-sm font-medium transition-all duration-300 transform scale-95 opacity-0 z-50 whitespace-nowrap`;
 
+			// 设置提示类型样式
+			const typeStyles = {
+				success: 'bg-green-50 text-green-700 border border-green-200',
+				error: 'bg-red-50 text-red-700 border border-red-200',
+				warning: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
+				info: 'bg-blue-50 text-blue-700 border border-blue-200'
+			};
+			toast.classList.add(...typeStyles[config.type].split(' '));
+
+			// 设置图标
+			const icons = {
+				success: 'fa-check-circle',
+				error: 'fa-exclamation-circle',
+				warning: 'fa-exclamation-triangle',
+				info: 'fa-info-circle'
+			};
+
+			// 构建提示内容
+			toast.innerHTML = `
+				<div class="flex items-center">
+					<i class="fa ${icons[config.type]} mr-2"></i>
+					<span>${message}</span>
+				</div>
+			`;
+
+			// 添加到DOM
 			document.body.appendChild(toast);
 
-			// 显示
+			// 显示动画
 			setTimeout(() => {
-				toast.classList.remove('translate-y-10', 'opacity-0');
-				toast.classList.add('translate-y-0', 'opacity-100');
+				toast.classList.remove('scale-95', 'opacity-0');
+				toast.classList.add('scale-100', 'opacity-100');
 			}, 10);
 
-			// 隐藏
+			// 隐藏动画
 			setTimeout(() => {
-				toast.classList.remove('translate-y-0', 'opacity-100');
-				toast.classList.add('translate-y-10', 'opacity-0');
-				setTimeout(() => toast.remove(), 300);
-			}, 2000);
+				toast.classList.remove('scale-100', 'opacity-100');
+				toast.classList.add('scale-95', 'opacity-0');
+
+				setTimeout(() => {
+					document.body.removeChild(toast);
+				}, 300);
+			}, config.duration);
+
+			return {
+				dismiss: () => {
+					// 立即隐藏提示
+					if (document.body.contains(toast)) {
+						toast.remove();
+					}
+				}
+			};
 		}
+
+		// 添加全局样式
+		(function addGlobalStyles() {
+			const style = document.createElement('style');
+			style.textContent = `
+				/* 确保Font Awesome加载 */
+				@import url('https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css');
+			`;
+			document.head.appendChild(style);
+		})();
 
 		// 页面加载完成后初始化
 		document.addEventListener('DOMContentLoaded', init);
