@@ -39,6 +39,7 @@
             .log-container {
                 height: calc(100vh - 185px);
                 overflow-y: auto;
+                overflow-x: hidden; /* 隐藏横向滚动条，用底部滚动条替代 */
             }
             
             .file-tree-container {
@@ -53,8 +54,8 @@
                 z-index: 10;
                 background-color: white;
                 border-top: 1px solid #eee;
-                }
-                
+            }
+            
             .sync-scroll {
                 scrollbar-width: thin;
             }
@@ -147,7 +148,8 @@
             }
             
             .log-line {
-                @apply block whitespace-pre-wrap break-words;
+                @apply block whitespace-nowrap; /* 不换行 */
+                line-height: 1.5;
             }
             
             .hidden-line {
@@ -168,6 +170,32 @@
             
             .search-hint {
                 @apply text-xs text-gray-500 mt-1;
+            }
+            
+            /* 固定横向滚动条 */
+            .fixed-horizontal-scroll {
+                position: sticky;
+                bottom: 0;
+                z-index: 20;
+                background-color: white;
+                border-top: 1px solid #eee;
+            }
+            
+            /* 文件树隐藏按钮 */
+            .toggle-tree-btn {
+                @apply absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer z-10;
+            }
+            
+            /* 显示文件树的浮动按钮 */
+            .show-tree-btn {
+                @apply fixed left-0 top-1/2 transform -translate-y-1/2 bg-primary text-white px-2 py-3 rounded-r-lg shadow-md cursor-pointer z-30;
+                display: none; /* 初始隐藏 */
+            }
+            
+            /* 日志内容容器 */
+            .log-content-wrapper {
+                @apply w-full overflow-x-auto; /* 整个容器横向滚动 */
+                display: block;
             }
         }
     </style>
@@ -197,6 +225,11 @@
                 <button id="clearHighlightBtn"
                     class="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center">
                     <i class="fa fa-times mr-2"></i>清除高亮
+                </button>
+                <!-- 新增：文件树切换按钮 -->
+                <button id="toggleTreeBtn"
+                    class="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center">
+                    <i class="fa fa-list mr-2"></i>切换文件树
                 </button>
             </div>
         </div>
@@ -259,12 +292,16 @@
     </div>
 
     <!-- 主要内容区域 -->
-    <div class="p-4 flex gap-0">
+    <div class="p-4 flex gap-0 relative">
         <!-- 左侧文件树 -->
-        <div id="fileTreeContainer" class="shrink-0 transition-all duration-200">
+        <div id="fileTreeContainer" class="shrink-0 transition-all duration-200 relative">
             <div class="bg-white border border-gray-200 rounded-lg shadow-sm h-full flex flex-col">
-                <div class="p-3 border-b border-gray-100 bg-gray-50 font-medium">
+                <div class="p-3 border-b border-gray-100 bg-gray-50 font-medium relative">
                     <i class="fa fa-folder-open-o mr-1.5"></i>文件结构
+                    <!-- 文件树隐藏按钮 -->
+                    <div id="hideTreeBtn" class="toggle-tree-btn">
+                        <i class="fa fa-angle-double-left"></i>
+                    </div>
                 </div>
                 <div id="fileTree" class="file-tree-container p-2">
                     <div class="text-center text-gray-500 py-16">
@@ -285,8 +322,10 @@
                     默认示例日志
                 </div>
                 <!-- 日志文本区域 - 纵向滚动 -->
-                <div id="logContent" class="log-container font-mono text-sm p-2">
-                    <pre class="whitespace-pre-wrap break-words default-log">2025-07-12 08:30:00 [INFO] 应用启动成功
+                <div id="logContent" class="log-container font-mono text-sm p-2 relative">
+                    <div class="log-content-wrapper">
+                        <pre class="default-log">
+2025-07-12 08:30:00 [INFO] 应用启动成功
 2025-07-12 08:30:01 [INFO] 数据库连接成功
 2025-07-12 08:30:02 [INFO] 缓存服务初始化完成
 2025-07-12 08:30:03 [INFO] 用户服务启动完成
@@ -310,15 +349,21 @@
 2025-07-12 09:30:00 [INFO]   最大响应时间: 456ms
 2025-07-12 09:30:00 [INFO]   错误请求数: 3
 2025-07-12 09:30:05 [INFO] 应用正常关闭</pre>
+                    </div>
                 </div>
 
-                <!-- 横向滚动条 - 固定在底部，与内容同步滚动 -->
-                <div class="horizontal-scrollbar">
-                    <div id="syncScroll" class="sync-scroll h-3">
+                <!-- 固定横向滚动条 - 始终显示在底部 -->
+                <div class="fixed-horizontal-scroll w-full">
+                    <div id="syncScroll" class="sync-scroll h-3 w-full">
                         <div id="scrollProxy" class="h-3"></div>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- 显示文件树的浮动按钮 -->
+        <div id="showTreeBtn" class="show-tree-btn">
+            <i class="fa fa-angle-double-right"></i>
         </div>
     </div>
 
@@ -343,6 +388,9 @@
         const fileTreeContainer = document.getElementById('fileTreeContainer');
         const logContainer = document.getElementById('logContainer');
         const resizer = document.getElementById('resizer');
+        const hideTreeBtn = document.getElementById('hideTreeBtn');
+        const showTreeBtn = document.getElementById('showTreeBtn');
+        const toggleTreeBtn = document.getElementById('toggleTreeBtn');
         
         // 滚动配置
         const SCROLL_SPEED = 50;
@@ -408,6 +456,9 @@
         // 搜索结果
         let searchResults = {};
         
+        // 文件树是否隐藏
+        let isFileTreeHidden = false;
+        
         // 初始化
         function init() {
             setupScrollSync();
@@ -415,12 +466,57 @@
             setupKeyboardNavigation();
             setupResizer();
             initEventListeners();
+            setupTreeToggle();
             
             // 设置默认文件树宽度
             fileTreeContainer.style.width = `${DEFAULT_FILE_TREE_WIDTH}px`;
             
             // 更新滚动代理宽度以匹配内容宽度
-            scrollProxyEl.style.width = `${logContentEl.scrollWidth}px`;
+            updateScrollProxyWidth();
+        }
+        
+        // 设置文件树显示/隐藏切换
+        function setupTreeToggle() {
+            // 隐藏文件树按钮
+            hideTreeBtn.addEventListener('click', () => {
+                hideFileTree();
+            });
+            
+            // 显示文件树按钮
+            showTreeBtn.addEventListener('click', () => {
+                showFileTree();
+            });
+            
+            // 顶部切换按钮
+            toggleTreeBtn.addEventListener('click', () => {
+                if (isFileTreeHidden) {
+                    showFileTree();
+                } else {
+                    hideFileTree();
+                }
+            });
+        }
+        
+        // 隐藏文件树
+        function hideFileTree() {
+            fileTreeContainer.style.width = '0';
+            fileTreeContainer.style.overflow = 'hidden';
+            resizer.style.display = 'none';
+            logContainer.style.width = '100%';
+            logContainer.style.paddingLeft = '0';
+            showTreeBtn.style.display = 'block';
+            isFileTreeHidden = true;
+        }
+        
+        // 显示文件树
+        function showFileTree() {
+            fileTreeContainer.style.width = `${DEFAULT_FILE_TREE_WIDTH}px`;
+            fileTreeContainer.style.overflow = 'visible';
+            resizer.style.display = 'block';
+            logContainer.style.width = `calc(100% - ${DEFAULT_FILE_TREE_WIDTH + 20}px)`;
+            logContainer.style.paddingLeft = '1rem';
+            showTreeBtn.style.display = 'none';
+            isFileTreeHidden = false;
         }
         
         // 加载默认日志示例
@@ -469,6 +565,21 @@
                     toggleFullscreen();
                     e.preventDefault();
                 }
+                // 检测 Ctrl + F
+                if (e.ctrlKey && (e.key === 'f' || e.key === 'F')) {
+                    e.preventDefault();
+                    searchInputEl.focus();
+                    searchInputEl.select();
+                }
+                // 检测 Ctrl + H 切换文件树
+                if (e.ctrlKey && (e.key === 'h' || e.key === 'H')) {
+                    e.preventDefault();
+                    if (isFileTreeHidden) {
+                        showFileTree();
+                    } else {
+                        hideFileTree();
+                    }
+                }
             });
         }
         
@@ -494,6 +605,19 @@
             syncScrollEl.addEventListener('scroll', (e) => {
                 logContentEl.scrollLeft = e.target.scrollLeft;
             });
+            
+            // 监听窗口大小变化更新滚动代理
+            window.addEventListener('resize', updateScrollProxyWidth);
+        }
+        
+        // 更新滚动代理宽度
+        function updateScrollProxyWidth() {
+            // 确保日志内容已加载
+            if (logContentEl.firstChild) {
+                // 获取日志内容的实际宽度
+                const contentWidth = logContentEl.scrollWidth;
+                scrollProxyEl.style.width = `${contentWidth}px`;
+            }
         }
         
         // 设置键盘导航 - 左右方向键控制横向滚动
@@ -825,8 +949,12 @@
             
             // 如果是默认日志，直接显示
             if (node.name === '默认示例日志') {
-                logContentEl.innerHTML = `<pre class="whitespace-pre-wrap break-words default-log">${currentFileContent}</pre>`;
-                scrollProxyEl.style.width = `${logContentEl.scrollWidth}px`;
+                logContentEl.innerHTML = `
+                    <div class="log-content-wrapper">
+                        <pre class="default-log">${currentFileContent}</pre>
+                    </div>
+                `;
+                updateScrollProxyWidth();
                 return;
             }
             
@@ -861,9 +989,12 @@
             const content = node.content || currentFileContent;
             const lines = content.split('\n');
             
+            // 创建内容容器
+            const wrapper = document.createElement('div');
+            wrapper.className = 'log-content-wrapper';
+            
             // 创建行容器
             const pre = document.createElement('pre');
-            pre.className = 'whitespace-pre-wrap break-words';
             
             lines.forEach((line, index) => {
                 const lineEl = document.createElement('div');
@@ -872,11 +1003,12 @@
                 pre.appendChild(lineEl);
             });
             
+            wrapper.appendChild(pre);
             logContentEl.innerHTML = '';
-            logContentEl.appendChild(pre);
+            logContentEl.appendChild(wrapper);
             
             // 更新滚动代理宽度以匹配内容宽度
-            scrollProxyEl.style.width = `${logContentEl.scrollWidth}px`;
+            updateScrollProxyWidth();
         }
         
         // 处理搜索
@@ -978,6 +1110,9 @@
                 if (multiFileSearchCheckbox.checked && matches > 0 && selectedFilePath) {
                     updateFileTreeSearchResults(keywords);
                 }
+                
+                // 更新滚动代理宽度（内容可能变宽）
+                updateScrollProxyWidth();
                 
                 // 显示搜索结果提示
                 showToast(`找到 ${matches} 个匹配项`);
@@ -1136,7 +1271,7 @@
             });
             
             // 更新滚动代理宽度以匹配内容宽度
-            scrollProxyEl.style.width = `${logContentEl.scrollWidth}px`;
+            updateScrollProxyWidth();
             
             // 隐藏关键词图例
             keywordLegendEl.classList.add('hidden');
@@ -1196,9 +1331,10 @@
                 const newFileTreeWidth = e.clientX - 20; // 减去边距
                 
                 // 限制最小宽度
-                if (newFileTreeWidth > 150 && newFileTreeWidth < containerWidth - 200) {
+                if (newFileTreeWidth > 50 && newFileTreeWidth < containerWidth - 200) {
                     fileTreeContainer.style.width = `${newFileTreeWidth}px`;
                     logContainer.style.width = `calc(100% - ${newFileTreeWidth + 20}px)`;
+                    updateScrollProxyWidth();
                 }
             });
             
