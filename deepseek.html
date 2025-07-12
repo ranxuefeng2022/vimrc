@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级日志分析工具 - 多文件搜索</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#0e42c7',
+                        neutral: '#86909C',
+                        dark: '#1d2129',
+                        success: '#36D399',
+                        warning: '#FBBD23',
+                        error: '#F87272',
+                        info: '#3ABFF8'
+                    },
+                    fontFamily: {
+                        mono: ['Consolas', 'Monaco', 'monospace'],
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            
+            .log-container {
+                height: calc(100vh - 185px);
+                overflow-y: auto;
+            }
+            
+            .file-tree-container {
+                height: calc(100vh - 185px);
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            
+            .horizontal-scrollbar {
+                position: sticky;
+                bottom: 0;
+                z-index: 10;
+                background-color: white;
+                border-top: 1px solid #eee;
+                }
+                
+            .sync-scroll {
+                scrollbar-width: thin;
+            }
+            
+            /* 高亮颜色定义 */
+            .highlight-0 {
+                @apply bg-yellow-200 text-gray-800;
+            }
+            
+            .highlight-1 {
+                @apply bg-blue-200 text-gray-800;
+            }
+            
+            .highlight-2 {
+                @apply bg-green-200 text-gray-800;
+            }
+            
+            .highlight-3 {
+                @apply bg-pink-200 text-gray-800;
+            }
+            
+            .highlight-4 {
+                @apply bg-purple-200 text-gray-800;
+            }
+            
+            .highlight-5 {
+                @apply bg-orange-200 text-gray-800;
+            }
+            
+            .highlight-6 {
+                @apply bg-cyan-200 text-gray-800;
+            }
+            
+            .highlight-7 {
+                @apply bg-red-200 text-gray-800;
+            }
+            
+            .highlight-8 {
+                @apply bg-lime-200 text-gray-800;
+            }
+            
+            .highlight-9 {
+                @apply bg-amber-200 text-gray-800;
+            }
+            
+            /* 文件树样式 */
+            .file-tree-node {
+                @apply py-1 px-2 rounded-md cursor-pointer hover:bg-gray-100 transition-colors;
+            }
+            
+            .file-tree-node-active {
+                @apply bg-primary/10 font-medium text-primary;
+            }
+            
+            .file-tree-icon {
+                @apply w-5 text-center mr-1.5;
+            }
+            
+            .file-tree-children {
+                @apply pl-5 ml-1 border-l border-gray-200;
+            }
+            
+            .toast {
+                @apply fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-5 py-3 rounded-lg shadow-lg text-sm font-medium transition-all duration-300 transform scale-95 opacity-0 z-50 whitespace-nowrap;
+            }
+            
+            .toast-success {
+                @apply bg-green-50 text-green-700 border border-green-200;
+            }
+            
+            .toast-error {
+                @apply bg-red-50 text-red-700 border border-red-200;
+            }
+            
+            .toast-warning {
+                @apply bg-yellow-50 text-yellow-700 border border-yellow-200;
+            }
+            
+            .toast-info {
+                @apply bg-blue-50 text-blue-700 border border-blue-200;
+            }
+            
+            /* 新增样式 */
+            .resizer {
+                @apply bg-gray-200 w-1 cursor-col-resize hover:bg-gray-300 transition-colors;
+            }
+            
+            .default-log {
+                @apply text-gray-600 bg-gray-50 p-4 rounded-lg border border-gray-200;
+            }
+            
+            .log-line {
+                @apply block whitespace-pre-wrap break-words;
+            }
+            
+            .hidden-line {
+                @apply hidden;
+            }
+            
+            .search-container {
+                @apply flex flex-wrap items-start gap-4;
+            }
+            
+            .options-container {
+                @apply flex flex-col gap-2;
+            }
+            
+            .search-box {
+                @apply flex-1 min-w-[300px] max-w-3xl;
+            }
+            
+            .search-hint {
+                @apply text-xs text-gray-500 mt-1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 m-0 p-0 font-sans">
+    <!-- 顶部导航 -->
+    <header class="bg-gradient-to-r from-primary to-secondary shadow-xs p-3">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fa fa-file-text-o text-white mr-2 text-xl"></i>
+                <h1 class="text-xl font-bold text-white inline-block">高级日志分析工具</h1>
+                <a href="//172.16.191.214/moduleParser/powerLparser/tools/PowerCenter.html" target="_blank"
+                    rel="noopener noreferrer"
+                    class="ml-4 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-1 px-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                    🔥 猛戳这里获得更多信息 🔥
+                </a>
+            </div>
+            <div class="flex gap-2">
+                <button id="uploadBtn"
+                    class="bg-white text-primary px-4 py-2 rounded-lg text-sm flex items-center font-medium hover:bg-gray-50 transition">
+                    <i class="fa fa-folder-open-o mr-2"></i>导入文件夹
+                </button>
+                <button id="copyBtn"
+                    class="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center">
+                    <i class="fa fa-copy mr-2"></i>复制
+                </button>
+                <button id="clearHighlightBtn"
+                    class="bg-white text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition flex items-center">
+                    <i class="fa fa-times mr-2"></i>清除高亮
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 搜索和快捷键提示区域 -->
+    <div class="bg-white border-b border-gray-100 p-4">
+        <div class="search-container">
+            <!-- 搜索框区域 -->
+            <div class="search-box">
+                <div class="flex items-center gap-2 mb-1">
+                    <i class="fa fa-search text-neutral"></i>
+                    <input type="text" id="searchInput"
+                        placeholder="搜索日志内容（关键字用单引号包裹，空格分隔，如：'error' 'timeout'）..."
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-base">
+                    <button id="clearSearch" class="text-neutral hover:text-gray-700 transition hidden">
+                        <i class="fa fa-times-circle text-lg"></i>
+                    </button>
+                </div>
+                <div class="search-hint">
+                    非正则模式下，请使用单引号包裹关键字并用空格分隔
+                </div>
+
+                <!-- 关键词颜色图例 -->
+                <div id="keywordLegend" class="flex flex-wrap gap-2 mt-2 hidden">
+                    <span class="text-xs text-gray-600">关键词颜色:</span>
+                </div>
+            </div>
+
+            <!-- 选项区域 -->
+            <div class="options-container">
+                <div class="flex gap-4 text-sm bg-gray-50 p-3 rounded-lg border border-gray-200 border-[0.5px]">
+                    <label class="flex items-center text-gray-700 cursor-pointer whitespace-nowrap">
+                        <input type="checkbox" id="regexCheckbox"
+                            class="mr-2 h-4 w-4 text-primary rounded focus:ring-primary">
+                        正则表达式
+                    </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer whitespace-nowrap">
+                        <input type="checkbox" id="ignoreCaseCheckbox"
+                            class="mr-2 h-4 w-4 text-primary rounded focus:ring-primary" checked>
+                        忽略大小写
+                    </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer whitespace-nowrap">
+                        <input type="checkbox" id="multiFileSearch"
+                            class="mr-2 h-4 w-4 text-primary rounded focus:ring-primary" checked>
+                        多文件搜索
+                    </label>
+                    <label class="flex items-center text-gray-700 cursor-pointer whitespace-nowrap">
+                        <input type="checkbox" id="showOnlyMatches"
+                            class="mr-2 h-4 w-4 text-primary rounded focus:ring-primary" checked>
+                        只显示匹配行
+                    </label>
+                    <div id="searchError"
+                        class="flex items-center text-red-500 text-sm hidden ml-2">
+                        <i class="fa fa-exclamation-triangle mr-1"></i><span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="p-4 flex gap-0">
+        <!-- 左侧文件树 -->
+        <div id="fileTreeContainer" class="shrink-0 transition-all duration-200">
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm h-full flex flex-col">
+                <div class="p-3 border-b border-gray-100 bg-gray-50 font-medium">
+                    <i class="fa fa-folder-open-o mr-1.5"></i>文件结构
+                </div>
+                <div id="fileTree" class="file-tree-container p-2">
+                    <div class="text-center text-gray-500 py-16">
+                        <i class="fa fa-folder-open-o text-4xl mb-3 text-gray-300"></i>
+                        <p>请导入文件夹</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 调整大小分隔线 -->
+        <div id="resizer" class="resizer"></div>
+        
+        <!-- 右侧日志内容 -->
+        <div id="logContainer" class="flex-1 pl-4">
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm h-full flex flex-col">
+                <div id="currentFileName" class="p-3 border-b border-gray-100 bg-gray-50 font-medium">
+                    默认示例日志
+                </div>
+                <!-- 日志文本区域 - 纵向滚动 -->
+                <div id="logContent" class="log-container font-mono text-sm p-2">
+                    <pre class="whitespace-pre-wrap break-words default-log">2025-07-12 08:30:00 [INFO] 应用启动成功
+2025-07-12 08:30:01 [INFO] 数据库连接成功
+2025-07-12 08:30:02 [INFO] 缓存服务初始化完成
+2025-07-12 08:30:03 [INFO] 用户服务启动完成
+2025-07-12 08:30:05 [INFO] API服务启动完成，监听端口: 8080
+2025-07-12 08:35:12 [INFO] 用户 admin 登录成功
+2025-07-12 08:36:45 [INFO] 用户 admin 创建了新订单 #ORD12345
+2025-07-12 08:37:20 [INFO] 订单 #ORD12345 支付成功
+2025-07-12 08:40:15 [WARNING] 检测到数据库连接超时，正在重试...
+2025-07-12 08:40:18 [INFO] 数据库重新连接成功
+2025-07-12 08:45:30 [INFO] 用户 test_user 登录成功
+2025-07-12 08:47:12 [INFO] 用户 test_user 创建了新订单 #ORD12346
+2025-07-12 08:48:35 [ERROR] 订单 #ORD12346 支付失败: 余额不足
+2025-07-12 08:48:37 [INFO] 订单 #ORD12346 状态更新为已取消
+2025-07-12 09:00:00 [INFO] 系统定时任务启动
+2025-07-12 09:00:15 [INFO] 数据备份任务完成
+2025-07-12 09:15:20 [INFO] 用户 admin 登出系统
+2025-07-12 09:20:45 [INFO] 用户 test_user 登出系统
+2025-07-12 09:30:00 [INFO] 应用性能统计:
+2025-07-12 09:30:00 [INFO]   请求总数: 128
+2025-07-12 09:30:00 [INFO]   平均响应时间: 128ms
+2025-07-12 09:30:00 [INFO]   最大响应时间: 456ms
+2025-07-12 09:30:00 [INFO]   错误请求数: 3
+2025-07-12 09:30:05 [INFO] 应用正常关闭</pre>
+                </div>
+
+                <!-- 横向滚动条 - 固定在底部，与内容同步滚动 -->
+                <div class="horizontal-scrollbar">
+                    <div id="syncScroll" class="sync-scroll h-3">
+                        <div id="scrollProxy" class="h-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const logContentEl = document.getElementById('logContent');
+        const syncScrollEl = document.getElementById('syncScroll');
+        const scrollProxyEl = document.getElementById('scrollProxy');
+        const searchInputEl = document.getElementById('searchInput');
+        const clearSearchEl = document.getElementById('clearSearch');
+        const clearHighlightBtnEl = document.getElementById('clearHighlightBtn');
+        const uploadBtnEl = document.getElementById('uploadBtn');
+        const copyBtnEl = document.getElementById('copyBtn');
+        const regexCheckbox = document.getElementById('regexCheckbox');
+        const ignoreCaseCheckbox = document.getElementById('ignoreCaseCheckbox');
+        const multiFileSearchCheckbox = document.getElementById('multiFileSearch');
+        const showOnlyMatchesCheckbox = document.getElementById('showOnlyMatches');
+        const searchErrorEl = document.getElementById('searchError');
+        const keywordLegendEl = document.getElementById('keywordLegend');
+        const fileTreeEl = document.getElementById('fileTree');
+        const currentFileNameEl = document.getElementById('currentFileName');
+        const fileTreeContainer = document.getElementById('fileTreeContainer');
+        const logContainer = document.getElementById('logContainer');
+        const resizer = document.getElementById('resizer');
+        
+        // 滚动配置
+        const SCROLL_SPEED = 50;
+        const FAST_SCROLL_SPEED = 200;
+        
+        // 默认文件树宽度（像素）
+        const DEFAULT_FILE_TREE_WIDTH = 300;
+        
+        // 当前文件内容
+        let currentFileContent = `2025-07-12 08:30:00 [INFO] 应用启动成功
+2025-07-12 08:30:01 [INFO] 数据库连接成功
+2025-07-12 08:30:02 [INFO] 缓存服务初始化完成
+2025-07-12 08:30:03 [INFO] 用户服务启动完成
+2025-07-12 08:30:05 [INFO] API服务启动完成，监听端口: 8080
+2025-07-12 08:35:12 [INFO] 用户 admin 登录成功
+2025-07-12 08:36:45 [INFO] 用户 admin 创建了新订单 #ORD12345
+2025-07-12 08:37:20 [INFO] 订单 #ORD12345 支付成功
+2025-07-12 08:40:15 [WARNING] 检测到数据库连接超时，正在重试...
+2025-07-12 08:40:18 [INFO] 数据库重新连接成功
+2025-07-12 08:45:30 [INFO] 用户 test_user 登录成功
+2025-07-12 08:47:12 [INFO] 用户 test_user 创建了新订单 #ORD12346
+2025-07-12 08:48:35 [ERROR] 订单 #ORD12346 支付失败: 余额不足
+2025-07-12 08:48:37 [INFO] 订单 #ORD12346 状态更新为已取消
+2025-07-12 09:00:00 [INFO] 系统定时任务启动
+2025-07-12 09:00:15 [INFO] 数据备份任务完成
+2025-07-12 09:15:20 [INFO] 用户 admin 登出系统
+2025-07-12 09:20:45 [INFO] 用户 test_user 登出系统
+2025-07-12 09:30:00 [INFO] 应用性能统计:
+2025-07-12 09:30:00 [INFO]   请求总数: 128
+2025-07-12 09:30:00 [INFO]   平均响应时间: 128ms
+2025-07-12 09:30:00 [INFO]   最大响应时间: 456ms
+2025-07-12 09:30:00 [INFO]   错误请求数: 3
+2025-07-12 09:30:05 [INFO] 应用正常关闭`;
+        
+        // 高亮颜色池
+        const highlightColors = [
+            'highlight-0', // 黄色
+            'highlight-1', // 蓝色
+            'highlight-2', // 绿色
+            'highlight-3', // 粉色
+            'highlight-4', // 紫色
+            'highlight-5', // 橙色
+            'highlight-6', // 青色
+            'highlight-7', // 红色
+            'highlight-8', // 青柠色
+            'highlight-9'  // 琥珀色
+        ];
+        
+        // 关键词到颜色的映射
+        let keywordColorMap = {};
+        
+        // 文件夹结构
+        let folderStructure = {
+            name: 'root',
+            isDirectory: true,
+            children: [],
+            content: null
+        };
+        
+        // 当前选中的文件路径
+        let selectedFilePath = null;
+        
+        // 搜索结果
+        let searchResults = {};
+        
+        // 初始化
+        function init() {
+            setupScrollSync();
+            setupEventListeners();
+            setupKeyboardNavigation();
+            setupResizer();
+            initEventListeners();
+            
+            // 设置默认文件树宽度
+            fileTreeContainer.style.width = `${DEFAULT_FILE_TREE_WIDTH}px`;
+            
+            // 更新滚动代理宽度以匹配内容宽度
+            scrollProxyEl.style.width = `${logContentEl.scrollWidth}px`;
+        }
+        
+        // 加载默认日志示例
+        function loadDefaultLog() {
+            // 已在HTML中直接显示默认日志
+        }
+        
+        // 全屏切换函数
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                // 进入全屏
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                }
+                showToast('退出全屏继续按Alt+x');
+            } else {
+                // 退出全屏
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.documentElement.msExitFullscreen) {
+                    document.documentElement.msExitFullscreen();
+                }
+            }
+        }
+        
+        // 处理全屏变化
+        function handleFullscreenChange() {
+            if (document.fullscreenElement) {
+                // 全屏信息显示
+            } else {
+                // 非全屏信息显示
+            }
+        }
+        
+        // 设置快捷键监听
+        function setupShortcutListener() {
+            document.addEventListener('keydown', (e) => {
+                // 检测 Alt + X
+                if (e.altKey && (e.key === 'x' || e.key === 'X')) {
+                    toggleFullscreen();
+                    e.preventDefault();
+                }
+            });
+        }
+        
+        // 初始化事件监听器
+        function initEventListeners() {
+            // 全屏事件监听
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('msfullscreenchange', handleFullscreenChange);
+            
+            // 设置快捷键
+            setupShortcutListener();
+        }
+        
+        // 设置滚动同步 - 横向滚动条与内容同步
+        function setupScrollSync() {
+            // 当内容横向滚动时，同步滚动条位置
+            logContentEl.addEventListener('scroll', (e) => {
+                syncScrollEl.scrollLeft = e.target.scrollLeft;
+            });
+            
+            // 当滚动条滚动时，同步内容位置
+            syncScrollEl.addEventListener('scroll', (e) => {
+                logContentEl.scrollLeft = e.target.scrollLeft;
+            });
+        }
+        
+        // 设置键盘导航 - 左右方向键控制横向滚动
+        function setupKeyboardNavigation() {
+            document.addEventListener('keydown', (e) => {
+                // 如果搜索框聚焦，则不处理滚动（避免影响输入）
+                if (document.activeElement === searchInputEl) {
+                    // 支持Esc清除搜索
+                    if (e.key === 'Escape') {
+                        clearSearch();
+                    }
+                    return;
+                }
+                
+                // F键聚焦搜索框
+                if (e.key === 'f' || e.key === 'F') {
+                    // 检查是否按下了Ctrl键
+                    if (e.ctrlKey || e.metaKey) {
+                        // 如果是Ctrl+F，则允许浏览器默认行为
+                        return;
+                    }
+                    e.preventDefault();
+                    searchInputEl.focus();
+                    searchInputEl.select();
+                    showToast('已聚焦搜索框 - 按Enter搜索');
+                    return;
+                }
+                
+                // 支持Esc清除搜索
+                if (e.key === 'Escape') {
+                    clearSearch();
+                    return;
+                }
+                
+                const isShiftPressed = e.shiftKey;
+                const scrollAmount = isShiftPressed ? FAST_SCROLL_SPEED : SCROLL_SPEED;
+                
+                // 左方向键 - 向左滚动
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault(); // 阻止页面默认滚动行为
+                    const newScrollLeft = logContentEl.scrollLeft - scrollAmount;
+                    logContentEl.scrollLeft = Math.max(0, newScrollLeft);
+                }
+                
+                // 右方向键 - 向右滚动
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault(); // 阻止页面默认滚动行为
+                    const maxScroll = logContentEl.scrollWidth - logContentEl.clientWidth;
+                    const newScrollLeft = logContentEl.scrollLeft + scrollAmount;
+                    logContentEl.scrollLeft = Math.min(maxScroll, newScrollLeft);
+                }
+            });
+        }
+        
+        // 设置事件监听
+        function setupEventListeners() {
+            // 添加 Enter 键事件监听
+            searchInputEl.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                    handleSearch(); // 仅在按下 Enter 时触发搜索
+                }
+            });
+            
+            clearSearchEl.addEventListener('click', clearSearch);
+            clearHighlightBtnEl.addEventListener('click', clearHighlight);
+            
+            // 正则和忽略大小写设置改变时重新搜索
+            regexCheckbox.addEventListener('change', handleSearch);
+            ignoreCaseCheckbox.addEventListener('change', handleSearch);
+            multiFileSearchCheckbox.addEventListener('change', handleSearch);
+            showOnlyMatchesCheckbox.addEventListener('change', handleSearch);
+            
+            // 上传日志
+            uploadBtnEl.addEventListener('click', () => {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.webkitdirectory = true;
+                fileInput.directory = true;
+                fileInput.multiple = true;
+                
+                fileInput.onchange = handleFolderUpload;
+                fileInput.click();
+            });
+            
+            // 复制日志
+            copyBtnEl.addEventListener('click', copyLogs);
+        }
+        
+        // 处理文件夹上传
+        function handleFolderUpload(e) {
+            const files = e.target.files;
+            if (!files.length) return;
+            
+            showToast('正在处理文件...');
+            
+            // 重置文件夹结构
+            folderStructure = {
+                name: 'root',
+                isDirectory: true,
+                children: [],
+                content: null
+            };
+            
+            // 解析文件结构
+            const directoryMap = new Map();
+            directoryMap.set('', folderStructure);
+            
+            // 异步处理文件
+            const processFiles = async () => {
+                // 构建文件夹结构
+                for (const file of files) {
+                    const relativePath = file.webkitRelativePath;
+                    const pathParts = relativePath.split('/');
+                    const fileName = pathParts.pop();
+                    const directoryPath = pathParts.join('/');
+                    
+                    // 确保目录存在
+                    if (!directoryMap.has(directoryPath)) {
+                        await createDirectoryPath(directoryPath, directoryMap);
+                    }
+                    
+                    // 获取父目录
+                    const parentDir = directoryMap.get(directoryPath);
+                    
+                    // 添加文件
+                    const fileNode = {
+                        name: fileName,
+                        isDirectory: false,
+                        path: relativePath,
+                        content: null,
+                        file: file,
+                        hasMatches: false // 添加匹配状态
+                    };
+                    
+                    parentDir.children.push(fileNode);
+                }
+                
+                // 渲染文件树
+                renderFileTree(folderStructure);
+                
+                // 显示成功提示
+                showToast(`成功导入 ${files.length} 个文件`);
+                
+                // 如果有文件，默认选择第一个
+                if (files.length > 0) {
+                    // 找到第一个文件节点
+                    const firstFile = findFirstFile(folderStructure);
+                    if (firstFile) {
+                        selectFile(firstFile);
+                    }
+                }
+                
+                // 重置搜索
+                clearSearch();
+            };
+            
+            processFiles();
+        }
+        
+        // 找到第一个文件节点
+        function findFirstFile(node) {
+            if (!node.isDirectory && node.file) {
+                return node;
+            }
+            
+            if (node.children && node.children.length > 0) {
+                for (const child of node.children) {
+                    const file = findFirstFile(child);
+                    if (file) return file;
+                }
+            }
+            
+            return null;
+        }
+        
+        // 创建目录路径
+        async function createDirectoryPath(path, directoryMap) {
+            const pathParts = path.split('/');
+            let currentPath = '';
+            
+            for (let i = 0; i < pathParts.length; i++) {
+                const part = pathParts[i];
+                currentPath = currentPath ? `${currentPath}/${part}` : part;
+                
+                if (!directoryMap.has(currentPath)) {
+                    // 找到父目录
+                    const parentPath = pathParts.slice(0, i).join('/');
+                    const parentDir = directoryMap.get(parentPath) || folderStructure;
+                    
+                    // 创建新目录
+                    const newDir = {
+                        name: part,
+                        isDirectory: true,
+                        path: currentPath,
+                        children: [],
+                        content: null
+                    };
+                    
+                    // 添加到父目录
+                    parentDir.children.push(newDir);
+                    
+                    // 添加到目录映射
+                    directoryMap.set(currentPath, newDir);
+                }
+            }
+        }
+        
+        // 渲染文件树
+        function renderFileTree(node, parentElement = null) {
+            const container = parentElement || fileTreeEl;
+            
+            // 清空容器
+            if (!parentElement) {
+                container.innerHTML = '';
+            }
+            
+            // 创建节点元素
+            const nodeElement = document.createElement('div');
+            nodeElement.className = 'file-tree-node';
+            nodeElement.dataset.path = node.path || '';
+            
+            // 添加图标和名称
+            if (node.isDirectory) {
+                nodeElement.innerHTML = `
+                    <div class="flex items-center cursor-pointer" data-path="${node.path || ''}">
+                        <i class="file-tree-icon fa fa-folder-o text-warning"></i>
+                        <span>${node.name}</span>
+                        <i class="ml-auto fa fa-chevron-down text-xs transition-transform duration-200 ${node.collapsed ? 'rotate-0' : 'rotate-90'}"></i>
+                    </div>
+                `;
+                
+                // 添加点击事件
+                const toggleElement = nodeElement.querySelector('.flex');
+                toggleElement.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleDirectory(node, nodeElement);
+                });
+                
+                // 添加双击事件（用于导航）
+                toggleElement.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    if (node.children && node.children.length > 0) {
+                        node.collapsed = !node.collapsed;
+                        renderFileTree(node, parentElement);
+                    }
+                });
+                
+                // 添加子节点
+                if (node.children && node.children.length > 0 && !node.collapsed) {
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'file-tree-children';
+                    
+                    node.children.forEach(child => {
+                        renderFileTree(child, childrenContainer);
+                    });
+                    
+                    nodeElement.appendChild(childrenContainer);
+                }
+            } else {
+                // 文件节点
+                nodeElement.innerHTML = `
+                    <div class="flex items-center" data-path="${node.path}">
+                        <i class="file-tree-icon fa fa-file-text-o text-neutral"></i>
+                        <span>${node.name}</span>
+                        ${node.hasMatches ? '<span class="ml-2 text-xs text-primary bg-primary/10 px-1 rounded search-match-indicator">有匹配</span>' : ''}
+                    </div>
+                `;
+                
+                // 添加点击事件
+                nodeElement.addEventListener('click', () => {
+                    selectFile(node);
+                });
+            }
+            
+            // 添加到容器
+            container.appendChild(nodeElement);
+        }
+        
+        // 切换目录展开/折叠状态
+        function toggleDirectory(node, element) {
+            node.collapsed = !node.collapsed;
+            
+            // 找到子节点容器
+            const childrenContainer = element.querySelector('.file-tree-children');
+            
+            if (node.collapsed) {
+                // 折叠目录
+                if (childrenContainer) {
+                    childrenContainer.remove();
+                }
+                element.querySelector('.fa-chevron-down').classList.remove('rotate-90');
+                element.querySelector('.fa-chevron-down').classList.add('rotate-0');
+            } else {
+                // 展开目录
+                if (!childrenContainer && node.children && node.children.length > 0) {
+                    const newChildrenContainer = document.createElement('div');
+                    newChildrenContainer.className = 'file-tree-children';
+                    
+                    node.children.forEach(child => {
+                        renderFileTree(child, newChildrenContainer);
+                    });
+                    
+                    element.appendChild(newChildrenContainer);
+                }
+                element.querySelector('.fa-chevron-down').classList.remove('rotate-0');
+                element.querySelector('.fa-chevron-down').classList.add('rotate-90');
+            }
+        }
+        
+        // 选择文件
+        function selectFile(node) {
+            // 更新文件树中选中状态
+            const allFileNodes = document.querySelectorAll('.file-tree-node');
+            allFileNodes.forEach(n => {
+                n.classList.remove('file-tree-node-active');
+            });
+            
+            // 获取当前点击的节点元素
+            const currentNode = document.querySelector(`.file-tree-node[data-path="${node.path}"]`);
+            if (currentNode) {
+                currentNode.classList.add('file-tree-node-active');
+            }
+            
+            // 更新当前文件名显示
+            currentFileNameEl.textContent = node.name;
+            
+            // 更新当前文件路径
+            selectedFilePath = node.path;
+            
+            // 如果是默认日志，直接显示
+            if (node.name === '默认示例日志') {
+                logContentEl.innerHTML = `<pre class="whitespace-pre-wrap break-words default-log">${currentFileContent}</pre>`;
+                scrollProxyEl.style.width = `${logContentEl.scrollWidth}px`;
+                return;
+            }
+            
+            // 显示加载状态
+            logContentEl.innerHTML = `
+                <div class="text-center text-gray-500 py-16">
+                    <i class="fa fa-spinner fa-spin text-4xl mb-3 text-primary"></i>
+                    <p>正在加载文件内容...</p>
+                </div>
+            `;
+            
+            // 读取文件内容
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentFileContent = e.target.result;
+                node.content = currentFileContent;
+                
+                // 显示文件内容
+                renderLogContent(node);
+                
+                // 如果有搜索词，执行搜索
+                if (searchInputEl.value.trim() !== '') {
+                    handleSearch();
+                }
+            };
+            
+            reader.readAsText(node.file);
+        }
+        
+        // 渲染日志内容
+        function renderLogContent(node) {
+            const content = node.content || currentFileContent;
+            const lines = content.split('\n');
+            
+            // 创建行容器
+            const pre = document.createElement('pre');
+            pre.className = 'whitespace-pre-wrap break-words';
+            
+            lines.forEach((line, index) => {
+                const lineEl = document.createElement('div');
+                lineEl.className = 'log-line';
+                lineEl.textContent = line;
+                pre.appendChild(lineEl);
+            });
+            
+            logContentEl.innerHTML = '';
+            logContentEl.appendChild(pre);
+            
+            // 更新滚动代理宽度以匹配内容宽度
+            scrollProxyEl.style.width = `${logContentEl.scrollWidth}px`;
+        }
+        
+        // 处理搜索
+        function handleSearch() {
+            const searchText = searchInputEl.value.trim();
+            
+            // 显示或隐藏清除按钮
+            clearSearchEl.style.display = searchText ? 'block' : 'none';
+            
+            if (!searchText) {
+                // 清空搜索结果
+                clearSearchHighlight();
+                return;
+            }
+            
+            try {
+                // 隐藏搜索错误
+                searchErrorEl.classList.add('hidden');
+                
+                // 解析多个关键词
+                let keywords = [];
+                
+                if (regexCheckbox.checked) {
+                    // 正则表达式模式 - 整个搜索文本作为一个正则表达式
+                    keywords = [searchText];
+                } else {
+                    // 普通文本模式 - 使用单引号包裹关键字并用空格分隔
+                    keywords = parseQuotedKeywords(searchText);
+                }
+                
+                if (keywords.length === 0) {
+                    clearSearchHighlight();
+                    return;
+                }
+                
+                // 重置关键词颜色映射
+                keywordColorMap = {};
+                keywords.forEach((keyword, index) => {
+                    keywordColorMap[keyword] = highlightColors[index % highlightColors.length];
+                });
+                
+                // 更新关键词颜色图例
+                updateKeywordLegend(keywords);
+                
+                // 执行搜索
+                let matches = 0;
+                
+                // 获取所有日志行
+                const logLines = logContentEl.querySelectorAll('.log-line');
+                
+                // 遍历所有行
+                logLines.forEach(lineEl => {
+                    let lineText = lineEl.textContent;
+                    let lineHasMatch = false;
+                    
+                    // 对每个关键词进行匹配
+                    keywords.forEach(keyword => {
+                        let regex;
+                        
+                        if (regexCheckbox.checked) {
+                            // 正则表达式模式
+                            const flags = ignoreCaseCheckbox.checked ? 'gi' : 'g';
+                            regex = new RegExp(keyword, flags);
+                        } else {
+                            // 普通文本模式 - 转义正则特殊字符
+                            const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            const flags = ignoreCaseCheckbox.checked ? 'gi' : 'g';
+                            regex = new RegExp(escapedKeyword, flags);
+                        }
+                        
+                        // 检查该行是否有匹配
+                        if (regex.test(lineText)) {
+                            lineHasMatch = true;
+                            matches++;
+                            
+                            // 高亮关键词
+                            lineText = lineText.replace(regex, match => {
+                                return `<span class="${keywordColorMap[keyword]}">${match}</span>`;
+                            });
+                        }
+                    });
+                    
+                    // 更新行内容
+                    lineEl.innerHTML = lineText;
+                    
+                    // 根据是否显示匹配行选项处理显示状态
+                    if (showOnlyMatchesCheckbox.checked) {
+                        if (lineHasMatch) {
+                            lineEl.classList.remove('hidden-line');
+                        } else {
+                            lineEl.classList.add('hidden-line');
+                        }
+                    } else {
+                        lineEl.classList.remove('hidden-line');
+                    }
+                });
+                
+                // 更新文件树中的搜索结果标记
+                if (multiFileSearchCheckbox.checked && matches > 0 && selectedFilePath) {
+                    updateFileTreeSearchResults(keywords);
+                }
+                
+                // 显示搜索结果提示
+                showToast(`找到 ${matches} 个匹配项`);
+            } catch (error) {
+                // 显示搜索错误
+                searchErrorEl.querySelector('span').textContent = error.message;
+                searchErrorEl.classList.remove('hidden');
+                console.error('搜索错误:', error);
+            }
+        }
+        
+        // 解析带单引号的关键字
+        function parseQuotedKeywords(text) {
+            // 尝试匹配单引号包裹的关键字
+            const quotedPattern = /'([^']*)'/g;
+            const matches = [];
+            let match;
+            
+            while ((match = quotedPattern.exec(text)) !== null) {
+                if (match[1].trim() !== '') {
+                    matches.push(match[1]);
+                }
+            }
+            
+            // 如果找到带引号的关键字，返回它们
+            if (matches.length > 0) {
+                return matches;
+            }
+            
+            // 如果没有找到带引号的关键字，按空格分割
+            return text.split(/\s+/).filter(word => word.trim() !== '');
+        }
+        
+        // 更新关键词颜色图例
+        function updateKeywordLegend(keywords) {
+            keywordLegendEl.innerHTML = '<span class="text-xs text-gray-600">关键词颜色:</span>';
+            
+            keywords.forEach(keyword => {
+                const colorClass = keywordColorMap[keyword];
+                const legendItem = document.createElement('span');
+                legendItem.className = `text-xs px-1.5 py-0.5 rounded mx-1 ${colorClass}`;
+                legendItem.textContent = keyword;
+                keywordLegendEl.appendChild(legendItem);
+            });
+            
+            keywordLegendEl.classList.remove('hidden');
+        }
+        
+        // 更新文件树中的搜索结果标记
+        function updateFileTreeSearchResults(keywords) {
+            // 重置所有文件的匹配状态
+            resetFileTreeMatchIndicators();
+            
+            // 遍历所有文件节点
+            const fileNodes = document.querySelectorAll('.file-tree-node');
+            fileNodes.forEach(nodeEl => {
+                if (!nodeEl.dataset.path) return;
+                
+                // 找到对应的文件节点
+                const path = nodeEl.dataset.path;
+                const fileNode = findFileByPath(folderStructure, path);
+                
+                if (fileNode && fileNode.content) {
+                    // 检查文件内容是否包含任何关键词
+                    let hasMatch = false;
+                    
+                    keywords.forEach(keyword => {
+                        let regex;
+                        
+                        if (regexCheckbox.checked) {
+                            const flags = ignoreCaseCheckbox.checked ? 'gi' : 'g';
+                            regex = new RegExp(keyword, flags);
+                        } else {
+                            const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            const flags = ignoreCaseCheckbox.checked ? 'gi' : 'g';
+                            regex = new RegExp(escapedKeyword, flags);
+                        }
+                        
+                        if (regex.test(fileNode.content)) {
+                            hasMatch = true;
+                        }
+                    });
+                    
+                    // 更新文件节点的匹配状态
+                    if (hasMatch) {
+                        fileNode.hasMatches = true;
+                        const flexElement = nodeEl.querySelector('.flex');
+                        if (flexElement) {
+                            // 检查是否已有提示
+                            if (!flexElement.querySelector('.search-match-indicator')) {
+                                const indicator = document.createElement('span');
+                                indicator.className = 'ml-2 text-xs text-primary bg-primary/10 px-1 rounded search-match-indicator';
+                                indicator.textContent = '有匹配';
+                                flexElement.appendChild(indicator);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 重置文件树匹配标记
+        function resetFileTreeMatchIndicators() {
+            // 遍历所有文件节点
+            const fileNodes = document.querySelectorAll('.file-tree-node');
+            fileNodes.forEach(nodeEl => {
+                if (!nodeEl.dataset.path) return;
+                
+                // 找到对应的文件节点
+                const path = nodeEl.dataset.path;
+                const fileNode = findFileByPath(folderStructure, path);
+                
+                if (fileNode) {
+                    fileNode.hasMatches = false;
+                }
+                
+                // 移除匹配提示
+                const indicator = nodeEl.querySelector('.search-match-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            });
+        }
+        
+        // 根据路径查找文件节点
+        function findFileByPath(node, path) {
+            if (node.path === path) {
+                return node;
+            }
+            
+            if (node.children && node.children.length > 0) {
+                for (const child of node.children) {
+                    const found = findFileByPath(child, path);
+                    if (found) return found;
+                }
+            }
+            
+            return null;
+        }
+        
+        // 清除搜索高亮
+        function clearSearchHighlight() {
+            if (!currentFileContent) return;
+            
+            // 获取所有日志行
+            const logLines = logContentEl.querySelectorAll('.log-line');
+            
+            // 移除所有高亮并显示所有行
+            logLines.forEach(lineEl => {
+                lineEl.classList.remove('hidden-line');
+                
+                // 移除高亮span，保留文本内容
+                if (lineEl.innerHTML !== lineEl.textContent) {
+                    lineEl.textContent = lineEl.textContent;
+                }
+            });
+            
+            // 更新滚动代理宽度以匹配内容宽度
+            scrollProxyEl.style.width = `${logContentEl.scrollWidth}px`;
+            
+            // 隐藏关键词图例
+            keywordLegendEl.classList.add('hidden');
+            
+            // 重置文件树匹配标记
+            resetFileTreeMatchIndicators();
+        }
+        
+        // 清除高亮
+        function clearHighlight() {
+            clearSearchHighlight();
+            
+            // 显示提示
+            showToast('已清除所有高亮');
+        }
+        
+        // 清除搜索
+        function clearSearch() {
+            searchInputEl.value = '';
+            clearSearchEl.style.display = 'none';
+            clearSearchHighlight();
+            searchErrorEl.classList.add('hidden');
+            
+            searchInputEl.focus();
+        }
+        
+        // 复制日志
+        function copyLogs() {
+            if (!currentFileContent) {
+                showToast('没有可复制的内容');
+                return;
+            }
+            
+            navigator.clipboard.writeText(currentFileContent)
+                .then(() => {
+                    showToast('日志内容已复制到剪贴板');
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                    showToast('复制失败，请手动复制');
+                });
+        }
+        
+        // 设置可调整大小
+        function setupResizer() {
+            let isResizing = false;
+            
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                document.body.style.cursor = 'col-resize';
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                
+                const containerWidth = document.body.clientWidth;
+                const newFileTreeWidth = e.clientX - 20; // 减去边距
+                
+                // 限制最小宽度
+                if (newFileTreeWidth > 150 && newFileTreeWidth < containerWidth - 200) {
+                    fileTreeContainer.style.width = `${newFileTreeWidth}px`;
+                    logContainer.style.width = `calc(100% - ${newFileTreeWidth + 20}px)`;
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isResizing = false;
+                document.body.style.cursor = '';
+            });
+        }
+        
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            // 移除现有的提示
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // 创建新提示
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            
+            // 添加到页面
+            document.body.appendChild(toast);
+            
+            // 显示动画
+            setTimeout(() => {
+                toast.classList.remove('scale-95', 'opacity-0');
+                toast.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            
+            // 自动隐藏
+            setTimeout(() => {
+                toast.classList.remove('scale-100', 'opacity-100');
+                toast.classList.add('scale-95', 'opacity-0');
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
